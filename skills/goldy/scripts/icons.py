@@ -24,9 +24,10 @@ ICONS = {
     "testing":   '<path d="M6.3 2v6.6l-2.2 3.1a1.4 1.4 0 001.1 2.2h5.6a1.4 1.4 0 001.1-2.2L9.7 8.6V2"/><path d="M5.5 2h5M6.5 9.5h3"/>',
     "network":   '<circle cx="3.8" cy="4" r="1.7"/><circle cx="12.2" cy="4.6" r="1.7"/><circle cx="7.4" cy="12.2" r="1.7"/><path d="M5.4 4.3l5.1.5M5.1 5.2l1.6 5.5M10.7 6l-2.6 4.9"/>',
     "recap":     '<path d="M3.5 2.6h9v10.8h-9z"/><path d="M5.6 5.4h4.8M5.6 8h4.8M5.6 10.6h3"/>',
-    # Goldy's brand mark: a stylized golden cloud-wave scroll, a symmetric centre
-    # double-curl flanked by mirrored spiral curls, all riding a flowing wave line
-    "goldy":     '<path d="M8 6.1c1.3 0 2.1 1 2 2.2-.1 1-.9 1.6-1.8 1.4-.7-.2-1.1-.9-.8-1.5"/><path d="M8 6.1c-1.3 0-2.1 1-2 2.2.1 1 .9 1.6 1.8 1.4.7-.2 1.1-.9.8-1.5"/><path d="M10 8.3c.4-1.2 1.6-1.8 2.8-1.4 1.1.4 1.7 1.5 1.3 2.6-.3.9-1.2 1.3-2 1-.6-.2-.9-.8-.7-1.4"/><path d="M6 8.3c-.4-1.2-1.6-1.8-2.8-1.4-1.1.4-1.7 1.5-1.3 2.6.3.9 1.2 1.3 2 1 .6-.2.9-.8.7-1.4"/><path d="M1.2 9.7c.9 1.3 2.2 1.4 3.4.3M14.8 9.7c-.9 1.3-2.2 1.4-3.4.3"/>',
+    # Goldy's brand mark: a stylized golden cloud-wave scroll. A symmetric centre
+    # double-curl, flanked by mirrored spiral volutes, then smaller end curls, all
+    # riding a layered wave line, the way an auspicious-cloud motif is built up
+    "goldy":     '<path d="M8 5.2c1.4 0 2.3 1.1 2.2 2.4-.1 1.1-1 1.8-2 1.5-.7-.2-1.2-1-.8-1.7"/><path d="M8 5.2c-1.4 0-2.3 1.1-2.2 2.4.1 1.1 1 1.8 2 1.5.7-.2 1.2-1 .8-1.7"/><path d="M10.2 7.6c.4-1.3 1.7-2 3-1.6 1.2.4 1.9 1.6 1.4 2.8-.3 1-1.3 1.4-2.2 1.1-.7-.2-1-.9-.7-1.5"/><path d="M5.8 7.6c-.4-1.3-1.7-2-3-1.6-1.2.4-1.9 1.6-1.4 2.8.3 1 1.3 1.4 2.2 1.1.7-.2 1-.9.7-1.5"/><path d="M14.6 8.8c.5 1 .2 2.1-.8 2.6-.8.4-1.8.1-2.2-.7-.3-.5-.1-1.2.4-1.5M1.4 8.8c-.5 1-.2 2.1.8 2.6.8.4 1.8.1 2.2-.7.3-.5.1-1.2-.4-1.5"/><path d="M2.4 11.5c1.5 1.1 3 1 4.4-.3 1-.9 1.9-.9 2.9 0 1.4 1.3 2.9 1.4 4.4.3"/>',
     # tools
     "terminal":  '<rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4L7 8l-2.4 1.6M8.4 9.8H11"/>',
     "pencil":    '<path d="M10.5 2.8l2.7 2.7-7.4 7.4-3.3.6.6-3.3z"/><path d="M9.2 4.1l2.7 2.7"/>',

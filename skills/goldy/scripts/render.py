@@ -1407,6 +1407,10 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .card-body{display:grid;grid-template-rows:1fr;
   transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1),opacity .22s ease}
 .cb-inner{overflow:hidden;min-height:0}
+/* once a card is open, let its content overflow so hover tooltips are not clipped
+   at the card edge. The switch is delayed past the reveal so collapsing still clips
+   cleanly; collapsing reverts to hidden immediately (base rule, no transition). */
+.node:not(.collapsed) .cb-inner{overflow:visible;transition:overflow 0s .32s}
 .node.collapsed .card-body{grid-template-rows:0fr;opacity:0}
 /* collapsed node = a graph bubble: the kind icon swells into a big round face
    with the title beside it, the card chrome (border, fill, padding, body) all
@@ -1495,10 +1499,13 @@ code{background:#f0ece3;border-radius:5px;padding:1px 5px;font:12.5px ui-monospa
 /* embedded program panel + python tokens */
 .emb-chip{display:inline-block;padding:1px 9px;border-radius:6px;background:#3a4a5a;
   color:#cfe0f1;font-weight:600;font-size:11.5px}
-.emb{margin:8px 0 2px;border:1px solid #34302a;border-radius:8px;overflow:hidden;
+/* overflow visible so a tooltip on the first code line is not clipped by the panel;
+   corners are rounded per child instead of by clipping the container */
+.emb{margin:8px 0 2px;border:1px solid #34302a;border-radius:8px;overflow:visible;
   background:#17150f}
 .emb-head{display:flex;align-items:center;gap:9px;padding:8px 12px;background:#221f18;
-  font:600 12px ui-monospace,Menlo,monospace;color:#cdc6b8}
+  border-radius:7px 7px 0 0;font:600 12px ui-monospace,Menlo,monospace;color:#cdc6b8}
+.emb>:last-child{border-radius:0 0 7px 7px}
 .emb-lang{flex:none;background:#2f6b61;color:#eafff8;border-radius:999px;padding:2px 10px;
   font-size:11px;font-weight:700}
 .emb-path{flex:1;min-width:0;color:#8f897b;font-size:11.5px;overflow:hidden;

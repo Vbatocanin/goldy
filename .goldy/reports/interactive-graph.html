@@ -239,6 +239,10 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .card-body{display:grid;grid-template-rows:1fr;
   transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1),opacity .22s ease}
 .cb-inner{overflow:hidden;min-height:0}
+/* once a card is open, let its content overflow so hover tooltips are not clipped
+   at the card edge. The switch is delayed past the reveal so collapsing still clips
+   cleanly; collapsing reverts to hidden immediately (base rule, no transition). */
+.node:not(.collapsed) .cb-inner{overflow:visible;transition:overflow 0s .32s}
 .node.collapsed .card-body{grid-template-rows:0fr;opacity:0}
 /* collapsed node = a graph bubble: the kind icon swells into a big round face
    with the title beside it, the card chrome (border, fill, padding, body) all
@@ -327,10 +331,13 @@ code{background:#f0ece3;border-radius:5px;padding:1px 5px;font:12.5px ui-monospa
 /* embedded program panel + python tokens */
 .emb-chip{display:inline-block;padding:1px 9px;border-radius:6px;background:#3a4a5a;
   color:#cfe0f1;font-weight:600;font-size:11.5px}
-.emb{margin:8px 0 2px;border:1px solid #34302a;border-radius:8px;overflow:hidden;
+/* overflow visible so a tooltip on the first code line is not clipped by the panel;
+   corners are rounded per child instead of by clipping the container */
+.emb{margin:8px 0 2px;border:1px solid #34302a;border-radius:8px;overflow:visible;
   background:#17150f}
 .emb-head{display:flex;align-items:center;gap:9px;padding:8px 12px;background:#221f18;
-  font:600 12px ui-monospace,Menlo,monospace;color:#cdc6b8}
+  border-radius:7px 7px 0 0;font:600 12px ui-monospace,Menlo,monospace;color:#cdc6b8}
+.emb>:last-child{border-radius:0 0 7px 7px}
 .emb-lang{flex:none;background:#2f6b61;color:#eafff8;border-radius:999px;padding:2px 10px;
   font-size:11px;font-weight:700}
 .emb-path{flex:1;min-width:0;color:#8f897b;font-size:11.5px;overflow:hidden;
@@ -429,10 +436,10 @@ footer b{color:var(--gold)}
 <body><div class="wrap">
 <a class='parent-link' href='../goldy-report.html' title='Go to parent doc' aria-label='Go to parent doc'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 13V3.4M4.3 7.1L8 3.4l3.7 3.7"/></svg></a>
 <header>
-  <span class="eyebrow"><span class="goldy-mark"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 6.1c1.3 0 2.1 1 2 2.2-.1 1-.9 1.6-1.8 1.4-.7-.2-1.1-.9-.8-1.5"/><path d="M8 6.1c-1.3 0-2.1 1-2 2.2.1 1 .9 1.6 1.8 1.4.7-.2 1.1-.9.8-1.5"/><path d="M10 8.3c.4-1.2 1.6-1.8 2.8-1.4 1.1.4 1.7 1.5 1.3 2.6-.3.9-1.2 1.3-2 1-.6-.2-.9-.8-.7-1.4"/><path d="M6 8.3c-.4-1.2-1.6-1.8-2.8-1.4-1.1.4-1.7 1.5-1.3 2.6.3.9 1.2 1.3 2 1 .6-.2.9-.8.7-1.4"/><path d="M1.2 9.7c.9 1.3 2.2 1.4 3.4.3M14.8 9.7c-.9 1.3-2.2 1.4-3.4.3"/></svg></span>Goldy walkthrough</span>
+  <span class="eyebrow"><span class="goldy-mark"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 5.2c1.4 0 2.3 1.1 2.2 2.4-.1 1.1-1 1.8-2 1.5-.7-.2-1.2-1-.8-1.7"/><path d="M8 5.2c-1.4 0-2.3 1.1-2.2 2.4.1 1.1 1 1.8 2 1.5.7-.2 1.2-1 .8-1.7"/><path d="M10.2 7.6c.4-1.3 1.7-2 3-1.6 1.2.4 1.9 1.6 1.4 2.8-.3 1-1.3 1.4-2.2 1.1-.7-.2-1-.9-.7-1.5"/><path d="M5.8 7.6c-.4-1.3-1.7-2-3-1.6-1.2.4-1.9 1.6-1.4 2.8.3 1 1.3 1.4 2.2 1.1.7-.2 1-.9.7-1.5"/><path d="M14.6 8.8c.5 1 .2 2.1-.8 2.6-.8.4-1.8.1-2.2-.7-.3-.5-.1-1.2.4-1.5M1.4 8.8c-.5 1-.2 2.1.8 2.6.8.4 1.8.1 2.2-.7.3-.5.1-1.2-.4-1.5"/><path d="M2.4 11.5c1.5 1.1 3 1 4.4-.3 1-.9 1.9-.9 2.9 0 1.4 1.3 2.9 1.4 4.4.3"/></svg></span>Goldy walkthrough</span>
   <h1>Interactive graph: collapsible bubbles and a flowing spine</h1>
   <p class="intro">A UI rework of the report. Every node became a collapsible circular bubble that morphs open, the spine flows in the node&#x27;s own colour on hover, and the report grew a per-conversation history with a master index.</p>
-  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 22:38</span></div>
+  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 23:18</span></div>
   <div class='detail-ctl'><span class='dc-lead'>Detail level</span><div class='dc-seg' role='group' aria-label='Detail level'><button type='button' class='dc-btn' data-level='essentials' title='Only the key requests and decisions.'>Essentials</button><button type='button' class='dc-btn active' data-level='standard' title='Key steps plus the actions that carried them out.'>Standard</button><button type='button' class='dc-btn' data-level='everything' title='Every node, including minor and supporting steps.'>Everything</button></div><span class='dc-count'></span></div>
   <div class="filters">
     <span class="filters-lead">Filter by type</span>
