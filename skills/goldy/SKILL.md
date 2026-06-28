@@ -1,6 +1,6 @@
 ---
 name: goldy
-description: Export the current Claude Code session into a human-readable, Notion-style HTML report. Works in five explicit phases (ingest the full history, take inventory, research, enrich, then render) and produces a graph of request, decision, principle, security, performance and action nodes, each with the rationale behind it and a "Learn more" drawer linking the references, tutorials and summaries needed to understand it. Use when the user asks to "explain what you did", "show your work", "document this session", "generate a Goldy report", or invokes /goldy.
+description: Export the current Claude Code session into a human-readable, Notion-style HTML report. Works in five explicit phases (ingest the full history, take inventory, research, enrich, then render) and produces an interactive graph of request, decision, principle, security, performance, testing, networking and action nodes plus a closing summary, each rendered as a collapsible bubble with the rationale behind it and a "Learn more" drawer linking the references, tutorials and summaries needed to understand it. Use when the user asks to "explain what you did", "show your work", "document this session", "generate a Goldy report", or invokes /goldy.
 ---
 
 # Goldy: make your codebase changes legible

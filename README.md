@@ -176,12 +176,30 @@ A vertical graph of nodes connected by a colored spine. Node kinds:
 - **Decision** (gold): Claude's reasoning, with a **WHY** block and, where it
   matters, an *Other paths considered* list of alternatives and tradeoffs.
 - **Action** (blue): a tool call (Bash, Edit, Write, ...) with its result.
-- **Principle / Security / Performance** (teal / red / amber): teaching nodes
-  that name the idea behind a choice and link the book, blog, spec or course.
+- **Principle / Security / Performance / Testing / Networking** (teal / red /
+  amber / green / blue): teaching nodes that name the idea behind a choice and
+  link the book, blog, spec or course.
+- **Summary** (neutral): a single closing node that recaps the whole walkthrough
+  as a short lead plus a few bulleted takeaways.
 
 Every node has a *Learn more* drawer with references tagged by kind (reference,
 tutorial, language, spec, book), deep-linked to the exact section, each with an
 optional *Read summary*.
+
+### Reading the graph
+
+The graph is interactive, and made to be read top to bottom like a story:
+
+- **Folded bubbles.** Every node starts collapsed to a big, kind-colored icon
+  bubble with its title beside it. Click a bubble (or *Expand all*) and it morphs
+  open: the icon shrinks to a header badge while the full card grows around it.
+- **Live spine.** Hovering a bubble lights its connector and spine segment in the
+  bubble's own color, with a brighter band flowing toward the next node.
+- **Priority staircase.** Bubbles step right by priority, so the key steps hug the
+  spine and minor ones cascade outward and the shape shows the hierarchy at a glance.
+- **Story bridges.** A one-line transition sits between each pair of bubbles. When
+  you filter nodes out (by **detail level** or **type chip**), the discarded ones'
+  sentences are stitched into the gap so the narrative never breaks.
 
 Commands and code teach you directly:
 
