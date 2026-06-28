@@ -118,13 +118,23 @@ Goldy runs five explicit phases (it learns before it writes):
    sections, and short summaries (preferring your resource library and LabEx).
 4. **Enrich** the nodes with rationale, alternatives, materials, and teaching
    nodes.
-5. **Render** `.goldy/goldy-report.html` and offer to open it.
+5. **Render** this conversation's report into `.goldy/reports/`, then rebuild the
+   master index and offer to open it.
 
-Open it with:
+Open the hub with:
 
 ```bash
 open .goldy/goldy-report.html       # macOS
 ```
+
+### One repo, many conversations
+
+A repo accumulates many sessions, so Goldy keeps a **history**: each conversation
+gets its own report under `.goldy/reports/<id>.html`, and `.goldy/goldy-report.html`
+is a **master index** that links to all of them, newest first. Re-rendering the
+same session overwrites its report rather than adding a duplicate.
+
+![the master index: a card per conversation with its summary, date, step count and kind chips](.goldy/history.png)
 
 ### Run the pipeline by hand
 
@@ -132,11 +142,13 @@ open .goldy/goldy-report.html       # macOS
 SK=~/.claude/skills/goldy/scripts
 python3 $SK/parse_transcript.py --latest -o .goldy/nodes.json
 # ... enrich .goldy/nodes.json (rationale, materials, alternatives, teaching nodes) ...
-python3 $SK/render.py .goldy/nodes.json -o .goldy/goldy-report.html
+python3 $SK/render.py .goldy/nodes.json -o .goldy/reports/<id>.html --register
+python3 $SK/render_index.py .goldy/reports -o .goldy/goldy-report.html
 ```
 
-To document a past session, pass that session's `.jsonl` path instead of
-`--latest`.
+`--register` records the report in `.goldy/reports/index.json`; `render_index.py`
+turns that manifest into the hub. To document a past session, pass that session's
+`.jsonl` path to `parse_transcript.py` instead of `--latest`.
 
 ---
 
@@ -242,7 +254,9 @@ teaching).
 |------|------|
 | `skills/goldy/SKILL.md` | the `/goldy` skill, orchestrates the five-phase pipeline |
 | `skills/goldy/scripts/parse_transcript.py` | transcript → raw nodes |
-| `skills/goldy/scripts/render.py` | nodes → Notion-style HTML |
+| `skills/goldy/scripts/render.py` | nodes → Notion-style HTML (one report per conversation) |
+| `skills/goldy/scripts/render_index.py` | the history manifest → master index page |
+| `skills/goldy/scripts/history.py` | maintains `.goldy/reports/index.json` |
 | `skills/goldy-init/SKILL.md` | first-run wizard that profiles the repo |
 | `skills/goldy-init/scripts/profile.py` | repo scanner + per-project profile (`.goldy/profile.json`) |
 | `skills/goldy-init/scripts/firstrun.sh` | SessionStart hook that fires the wizard once |
@@ -254,13 +268,16 @@ teaching).
 | `agents/goldy-historian.md` | research subagent for bulk material gathering |
 | `install.sh` | symlinks the skills + agent and registers the hook |
 | `.goldy/` | Goldy run on its own build (a live demo: open `goldy-report.html`) |
+| `.goldy/build.sh` | rebuilds the demo: a report per session + the master index |
 
 ### Where Goldy keeps state
 
 | Location | Scope | Holds |
 |----------|-------|-------|
 | `.goldy/profile.json` | per project | the repo profile from `goldy-init` |
-| `.goldy/goldy-report.html` | per project | the generated report |
+| `.goldy/goldy-report.html` | per project | the master index linking every report |
+| `.goldy/reports/<id>.html` | per conversation | one report per Claude Code session |
+| `.goldy/reports/index.json` | per project | the history manifest the index is built from |
 | `~/.claude/goldy/resources.json` | global | your indexed learning resources |
 
 ---

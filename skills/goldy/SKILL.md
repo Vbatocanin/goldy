@@ -212,11 +212,24 @@ Each teaching node has the same shape as a decision (`title`, `summary`,
 
 ### Phase 5: Render the HTML (only now)
 
-Only after Phases 1 to 4 are complete, write the document:
+Only after Phases 1 to 4 are complete, write the document. A repo accumulates many
+conversations, so each one gets its **own report** under `.goldy/reports/`, and a
+**master index** at `.goldy/goldy-report.html` links to all of them. Render this
+session's report (registering it in the history manifest), then rebuild the index:
 
 ```bash
-python3 "$SKILL_DIR/scripts/render.py" .goldy/nodes.json -o .goldy/goldy-report.html
+python3 "$SKILL_DIR/scripts/render.py" .goldy/nodes.json \
+  -o .goldy/reports/<id>.html --register
+python3 "$SKILL_DIR/scripts/render_index.py" .goldy/reports \
+  -o .goldy/goldy-report.html
 ```
+
+Use the session id for `<id>` (the renderer defaults to `meta.session_id`, or a
+slug of the title, when `--register` is given without `--id`), so re-rendering the
+same conversation overwrites its report rather than adding a duplicate. `--register`
+upserts a small entry (title, summary, date, kind counts) into
+`.goldy/reports/index.json`; `render_index.py` turns that manifest into the master
+page, newest first. Offer to open `.goldy/goldy-report.html` (the hub) when done.
 
 **Detail level.** The report opens with a Detail control (Essentials, Standard,
 Everything) the reader can flip live to filter nodes by their `priority`:

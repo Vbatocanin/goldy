@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "session_id": "interactive-graph-rework",
+    "project": "goldy",
+    "title": "Interactive graph: collapsible bubbles and a flowing spine",
+    "summary": "A UI rework of the report. Every node became a collapsible circular bubble that morphs open, the spine flows in the node's own colour on hover, and the report grew a per-conversation history with a master index.",
+    "generated": "2026-06-28T21:55:00",
+    "detail": "standard"
+  },
+  "nodes": [
+    {
+      "id": "g1", "kind": "prompt", "priority": "high",
+      "title": "Make the report's nodes interactive bubbles",
+      "summary": "Rework the graph so nodes are circular bubbles with big icons that expand on click, with hover animations, a priority staircase, and connecting narration between steps.",
+      "rationale": "A wall of open cards is hard to scan. Folding each step into a labelled bubble turns the report into a navigable map you choose to open.",
+      "transition": "The first move was to decide what a folded node should look like.",
+      "materials": []
+    },
+    {
+      "id": "g2", "kind": "decision", "priority": "high",
+      "title": "Collapse each node into a morphing graph bubble",
+      "summary": "Each node starts as a big kind-coloured icon face with its title beside it, and clicking morphs it into the full card.",
+      "rationale": "Animating border-radius, fill and padding on a single element (rather than swapping two elements) keeps the open and closed states reading as one object resizing, with no layout jump.",
+      "transition": "Showing the bubble raised the question of how it sits on the spine.",
+      "materials": [
+        {"title": "Using CSS transitions (MDN)", "kind": "language", "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_transitions/Using_CSS_transitions", "note": "The transition model behind the morph from bubble to card."}
+      ]
+    },
+    {
+      "id": "g3", "kind": "principle", "priority": "medium",
+      "title": "One marker, drawn in front of the lines",
+      "summary": "The kind icon is the only marker in both states; the separate spine bead was removed, and the bubble is lifted above the connecting lines.",
+      "rationale": "Two circles (a bead plus a badge) read as clutter and an accidental duplicate when a card opened. Collapsing to one marker, with the spine tucked behind it via z-index, makes the graph legible.",
+      "transition": "With the shape settled, the connecting lines could be brought to life.",
+      "materials": [
+        {"title": "CSS stacking and z-index (MDN)", "kind": "reference", "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Stacking_context", "note": "Why the bubble needs its own stacking context to sit above the pseudo-element lines."}
+      ]
+    },
+    {
+      "id": "g4", "kind": "action", "priority": "low", "tool": "Edit",
+      "title": "Restyle the collapsed state in render.py",
+      "summary": "Edited the renderer's CSS so the collapsed card sheds its chrome and the icon swells to a 58px face.",
+      "rationale": "All of the report's style lives inline in render.py, so the bubble look is a focused set of edits to the collapsed-state rules.",
+      "transition": "Hovering then needed to feel alive, not static.",
+      "detail": "# skills/goldy/scripts/render.py\n.node.collapsed .card{background:transparent;border:none;box-shadow:none;padding:4px 0}\n.node.collapsed .node-ico{width:58px;height:58px}",
+      "materials": []
+    },
+    {
+      "id": "g5", "kind": "decision", "priority": "high",
+      "title": "Light the spine with a flowing current on hover",
+      "summary": "Hovering a bubble lights its connector and spine segment in the bubble's own colour, with a brighter band flowing toward the next node.",
+      "rationale": "A moving gradient reads as live current passing from one step to the next, reinforcing that the graph is a story you follow top to bottom.",
+      "transition": "Finally, a single repo holds many conversations, so reports needed history.",
+      "materials": [
+        {"title": "Using CSS animations (MDN)", "kind": "language", "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations/Using_CSS_animations", "note": "The keyframe + background-position technique behind the flowing band."}
+      ]
+    },
+    {
+      "id": "g6", "kind": "decision", "priority": "high",
+      "title": "Give each conversation its own report, linked from a master index",
+      "summary": "Reports are written per conversation under .goldy/reports/, and a master index page links to every one, newest first.",
+      "rationale": "A repo accumulates many sessions. Overwriting one file would lose the history, so each session is its own report and a manifest (index.json) drives a hub page that ties them together.",
+      "transition": "Taken together these changes make the report friendlier to navigate.",
+      "materials": []
+    },
+    {
+      "id": "g7", "kind": "summary", "priority": "high",
+      "title": "In summary: a friendlier, navigable report",
+      "summary": "The rework left the report easier to read and to keep:\n\n- **Folded bubbles** that morph open, so you scan first and dive in on demand.\n- **A living spine** that flows in each step's colour on hover.\n- **A priority staircase** and **story bridges** that show the shape and the narrative at a glance.\n- **Per-conversation history** with a master index, so a repo's sessions accumulate instead of overwriting.",
+      "rationale": "Each change serves the same goal: make a session's reasoning quick to navigate and durable to revisit.",
+      "materials": []
+    }
+  ]
+}

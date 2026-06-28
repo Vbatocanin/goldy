@@ -17,6 +17,8 @@ d["meta"]["summary"] = (
     "with the reasoning and sources behind each decision.")
 # Open the report at the middle detail level by default.
 d["meta"]["detail"] = "standard"
+# When this session happened (drives the history index date and ordering).
+d["meta"]["generated"] = "2026-06-26T15:42:00"
 
 # Per-node priority drives the detail-level filter (high survives "Essentials",
 # medium needs "Standard", low only shows at "Everything"). Code-changing steps

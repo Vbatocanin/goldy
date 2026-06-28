@@ -1160,7 +1160,7 @@ def render(data, detail=None):
         title=esc(meta.get("project", "Goldy") + " · Goldy report"),
         header_chips="".join(hc), headline=esc(headline), summary=esc(summary),
         byline=byline, detail_control=detail_control(detail),
-        graph_tools=graph_tools(), detail=detail,
+        graph_tools=graph_tools(), detail=detail, goldy_mark=icon("goldy"),
         nodes=body, css=CSS, js=JS)
 
 
@@ -1181,6 +1181,7 @@ header{margin-bottom:40px}
   letter-spacing:.14em;font-size:12px;color:var(--gold);text-transform:uppercase}
 .eyebrow .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);
   box-shadow:0 0 0 4px var(--gold-soft)}
+.eyebrow .goldy-mark{width:18px;height:18px}.eyebrow .goldy-mark .ic{width:18px;height:18px}
 h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spacing:-.02em;
   max-width:24ch}
 .intro{color:var(--muted);font-size:15.5px;max-width:62ch;line-height:1.55}
@@ -1687,7 +1688,7 @@ TEMPLATE = """<!doctype html>
 <style>{css}</style></head>
 <body><div class="wrap">
 <header>
-  <span class="eyebrow"><span class="dot"></span>Goldy walkthrough</span>
+  <span class="eyebrow"><span class="goldy-mark">{goldy_mark}</span>Goldy walkthrough</span>
   <h1>{headline}</h1>
   <p class="intro">{summary}</p>
   {byline}
@@ -1718,13 +1719,30 @@ def main():
     ap.add_argument("-o", "--out", default="goldy-report.html")
     ap.add_argument("--detail", choices=list(DETAIL_MIN_RANK),
                     help="initial detail level (default: meta.detail or standard)")
+    ap.add_argument("--id", help="explicit report id for the history manifest "
+                    "(default: the session id, or a slug of the title)")
+    ap.add_argument("--register", action="store_true",
+                    help="record this report in the reports-dir history manifest "
+                    "(index.json beside the output file)")
     args = ap.parse_args()
     raw = sys.stdin.read() if args.nodes == "-" else open(args.nodes).read()
     data = json.loads(raw)
+    out_parent = os.path.dirname(os.path.abspath(args.out))
+    os.makedirs(out_parent, exist_ok=True)
     with open(args.out, "w") as fh:
         fh.write(render(data, detail=args.detail))
     print(f"goldy: rendered {len(data.get('nodes', []))} nodes -> {args.out}",
           file=sys.stderr)
+    if args.register:
+        import history
+        entry = history.entry_from(data.get("meta", {}), data.get("nodes", []),
+                                   args.out)
+        if args.id:
+            entry["id"] = history.slug(args.id)
+        reports_dir = os.path.dirname(os.path.abspath(args.out))
+        history.upsert(reports_dir, entry)
+        print(f"goldy: registered '{entry['id']}' in {reports_dir}/index.json",
+              file=sys.stderr)
 
 
 if __name__ == "__main__":

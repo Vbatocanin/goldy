@@ -13,7 +13,8 @@
     },
     "title": "Building Goldy",
     "summary": "Goldy is a set of Claude Code skills and agents that turn a session into a readable report. This walkthrough traces how it was built, step by step, with the reasoning and sources behind each decision.",
-    "detail": "standard"
+    "detail": "standard",
+    "generated": "2026-06-26T15:42:00"
   },
   "nodes": [
     {
