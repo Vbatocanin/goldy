@@ -39,7 +39,8 @@
       "title": "Human request",
       "summary": "Goldy is a set of claude skills and agenst that helps developer keep in touch with what is being done to their codebase when using claude code. \nGoldy does the following:\n1. Exports the whole thinking and implementation process for it to be human readable, make an html with nodes  where each node is either a logic decicion node or an action node.\n2. Explain your rationale behind every action and decision and in a dropdown, link all the materials and articles that the user needs to know to understand the decision that was done. If you can't fetch the source yourlsef, make a nested document explaining it. Naturally use all the web access you have\n3. Format it in a notion like html document with chips, nice animations and colors",
       "timestamp": "2026-06-28T15:42:05.198Z",
-      "priority": "high"
+      "priority": "high",
+      "transition": "To turn that brief into a plan, the first move was to see what already existed."
     },
     {
       "id": "n2",
@@ -54,9 +55,10 @@
           "summary": "A skill is a folder containing a SKILL.md file whose YAML frontmatter (name and description) is preloaded into the system prompt so Claude knows when to use it. The fuller instructions, plus optional scripts, references and assets, load only when the skill is actually triggered. This progressive disclosure keeps base context small while still giving the agent deep, on-demand capability."
         }
       ],
-      "title": "I'll start by understanding the current state of the `goldy` directory and how Claude Cod\u2026",
+      "title": "Survey the project's starting point",
       "summary": "I'll start by understanding the current state of the `goldy` directory and how Claude Code skills/agents are structured.",
-      "timestamp": "2026-06-28T15:42:10.249Z"
+      "timestamp": "2026-06-28T15:42:10.249Z",
+      "transition": "That meant inspecting the project and where Claude Code keeps its skills and agents."
     },
     {
       "id": "n3",
@@ -81,7 +83,8 @@
           "url": "https://docs.sentry.io/cli/"
         }
       },
-      "priority": "low"
+      "priority": "low",
+      "transition": "The empty layout raised a question best answered by a real example."
     },
     {
       "id": "n4",
@@ -102,7 +105,8 @@
       "result_excerpt": "/Users/vbatocanin/.claude/skills/sentry-cli/SKILL.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/repo.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/dashboard.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/api.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/cli.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/sourcemap.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/span.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/schema.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/project.md\n/Users/vbatocanin/.claude/skills/sentry-cli/references/issue.md\n---SKILL.md head---\n---\nname: sentry-cli\nversion: 0.27.0\ndescription: Guide for using the Sentry CLI to interact with Sentry from the command line. Use when the user asks about viewing issues, events, projects, organizations, making API calls, or authenticating with Sentry via CLI.\nrequires:\n  bins: [\"sentry\"]\n  auth: true\n---\n\n# Sentry CLI Usage Guide\n\nHelp users interact with Sentry from the command line using the `sentry` CLI.\n\n## Agent Guidance\n\nBest practices and operational guidance for AI coding agents using the Sentry CLI.\n\n### Key Principles\n\n- **Just\n\u2026[truncated 2652 chars]",
       "status": "ok",
       "timestamp": "2026-06-28T15:42:19.276Z",
-      "priority": "low"
+      "priority": "low",
+      "transition": "Reading an installed skill revealed a pattern worth naming."
     },
     {
       "id": "p1",
@@ -123,7 +127,8 @@
           "note": "Anthropic's rationale for the skills architecture: why bundled scripts plus instructions beat a megaprompt.",
           "summary": "Anthropic frames skills as a way to package real-world procedures as instructions plus bundled code and assets, instead of stuffing everything into a single prompt. Only a skill's short description stays in context until it is invoked, so an agent can carry many capabilities without bloating its system prompt. The result composes better and is easier to maintain than one giant instruction blob."
         }
-      ]
+      ],
+      "transition": "With the skill format understood, the question became where the report's content comes from."
     },
     {
       "id": "n5",
@@ -141,7 +146,7 @@
           "note": "The append-friendly, line-delimited JSON format Claude Code uses for transcripts."
         }
       ],
-      "title": "The directory is empty \u2014 a fresh project. Goldy needs to capture Claude Code's thinking/a\u2026",
+      "title": "Source the report from the session transcript",
       "summary": "The directory is empty \u2014 a fresh project. Goldy needs to capture Claude Code's thinking/actions, which live in the session transcript JSONL files. Let me inspect that format so I build against the real data shape.",
       "timestamp": "2026-06-28T15:42:33.584Z",
       "alternatives": [
@@ -158,7 +163,8 @@
           "tradeoff": "Cheap and simple, but it is a paraphrase rather than the real trace and can drift from what actually happened."
         }
       ],
-      "priority": "high"
+      "priority": "high",
+      "transition": "The answer was the session transcript, so its on-disk format had to be opened up."
     },
     {
       "id": "n6",
@@ -171,7 +177,8 @@
       "result_excerpt": "total 88\ndrwxr-xr-x@ 4 vbatocanin  staff    128 Jun 28 17:42 .\ndrwx------@ 7 vbatocanin  staff    224 Jun 28 17:42 ..\n-rw-------@ 1 vbatocanin  staff  43677 Jun 28 17:42 3779a27f-175e-4422-b374-8ef16ed6b5f0.jsonl\ndrwxr-xr-x@ 2 vbatocanin  staff     64 Jun 28 17:42 memory\n---sample keys---\nfile: /Users/vbatocanin/.claude/projects/-Users-vbatocanin-Dev-GitHub-goldy/3779a27f-175e-4422-b374-8ef16ed6b5f0.jsonl\nmode | keys: ['type', 'mode', 'sessionId']\npermission-mode | keys: ['type', 'permissionMode', 'sessionId']\nfile-history-snapshot | keys: ['type', 'messageId', 'snapshot', 'isSnapshotUpdate']",
       "status": "ok",
       "timestamp": "2026-06-28T15:42:35.983Z",
-      "priority": "low"
+      "priority": "low",
+      "transition": "Seeing the raw events, the next step was to measure how often each kind occurs."
     },
     {
       "id": "n7",
@@ -190,7 +197,8 @@
       "result_excerpt": "type counts: {'mode': 2, 'permission-mode': 2, 'file-history-snapshot': 1, 'user': 4, 'attachment': 5, 'ai-title': 2, 'assistant': 8, 'last-prompt': 1}\nassistant content block types: ['thinking']\nuser content block types: ['tool_result']",
       "status": "ok",
       "timestamp": "2026-06-28T15:42:42.555Z",
-      "priority": "low"
+      "priority": "low",
+      "transition": "Those events also reach out to the web, which is worth a short detour."
     },
     {
       "id": "net1",
@@ -226,7 +234,8 @@
           "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
           "note": "The full reference for requests, responses, methods, headers and caching."
         }
-      ]
+      ],
+      "transition": "Back in the transcript, one more check settled how a single turn is ordered."
     },
     {
       "id": "n8",
@@ -239,7 +248,8 @@
       "result_excerpt": "THINK: \nTEXT: I'll start by understanding the current state of the `goldy` directory and how Claude Code\nTOOL: Bash | input keys: ['command', 'description']\nTHINK: \nTOOL: Bash | input keys: ['command', 'description']\nTHINK: \nTEXT: The directory is empty \u2014 a fresh project. Goldy needs to capture Claude Code's thinking/ac\nTOOL: Bash | input keys: ['command', 'description']\nTHINK: \nTOOL: Bash | input keys: ['command', 'description']",
       "status": "ok",
       "timestamp": "2026-06-28T15:42:49.354Z",
-      "priority": "low"
+      "priority": "low",
+      "transition": "With the shape fully confirmed, the data model could be locked in."
     },
     {
       "id": "n9",
@@ -254,10 +264,11 @@
           "summary": "Anthropic frames skills as a way to package real-world procedures as instructions plus bundled code and assets, instead of stuffing everything into a single prompt. Only a skill's short description stays in context until it is invoked, so an agent can carry many capabilities without bloating its system prompt. The result composes better and is easier to maintain than one giant instruction blob."
         }
       ],
-      "title": "I now understand the transcript shape: assistant messages carry `thinking`/`text`/`tool_u\u2026",
+      "title": "Lock in the parse model: decisions and actions",
       "summary": "I now understand the transcript shape: assistant messages carry `thinking`/`text`/`tool_use` blocks, and `tool_result`s come back in user messages. That's everything Goldy needs. Let me build the project.\n\nI'll create the canonical repo in `goldy/` (parser + renderer + skill + agent) and install it into `~/.claude`.",
       "timestamp": "2026-06-28T15:43:23.162Z",
-      "priority": "high"
+      "priority": "high",
+      "transition": "That decision rests on a principle worth stating plainly."
     },
     {
       "id": "p2",
@@ -280,7 +291,8 @@
           "note": "Read the section 'The Dependency Rule': source dependencies may only point inward, which keeps outer details (UI, DB) swappable.",
           "summary": "The post collects several architectures (hexagonal, onion, others) into one model of concentric layers, with business rules at the center and frameworks, UI and databases at the edges. Its core is the Dependency Rule: source-code dependencies may only point inward, so inner layers know nothing about outer ones. That is what lets you swap a detail like the renderer or the database without touching the policy at the core."
         }
-      ]
+      ],
+      "transition": "It pairs with a second habit visible all through the build."
     },
     {
       "id": "p5",
@@ -308,7 +320,8 @@
           "url": "https://en.wiktionary.org/wiki/measure_twice_and_cut_once",
           "note": "The craft idiom for verifying before you commit to an irreversible step."
         }
-      ]
+      ],
+      "transition": "Grounded by that preparation, the first real change to the repo could happen."
     },
     {
       "id": "n10",
@@ -343,7 +356,8 @@
       "result_excerpt": "done",
       "status": "ok",
       "timestamp": "2026-06-28T15:43:24.498Z",
-      "priority": "high"
+      "priority": "high",
+      "transition": "Creating files and an installer immediately raises a safety concern."
     },
     {
       "id": "s2",
@@ -364,7 +378,8 @@
           "url": "https://en.wikipedia.org/wiki/Principle_of_least_privilege",
           "note": "The access-control idea behind keeping the transcript directory private."
         }
-      ]
+      ],
+      "transition": "With the repo laid out safely, the first script could be designed."
     },
     {
       "id": "n11",
@@ -391,7 +406,7 @@
           "note": "A hands-on walkthrough of reading and writing JSON in Python, the exact task the parser does."
         }
       ],
-      "title": "Now the transcript parser \u2014 mechanical extraction of decision/action nodes from the JSONL:",
+      "title": "Build the transcript parser in Python",
       "summary": "Now the transcript parser \u2014 mechanical extraction of decision/action nodes from the JSONL:",
       "timestamp": "2026-06-28T15:43:27.877Z",
       "alternatives": [
@@ -408,7 +423,8 @@
           "tradeoff": "Most flexible, but nondeterministic, slower, and spends tokens on purely mechanical work."
         }
       ],
-      "priority": "high"
+      "priority": "high",
+      "transition": "How that script reads the file is a performance choice worth noting."
     },
     {
       "id": "o1",
@@ -441,7 +457,8 @@
           "option": "Read all lines into a list first",
           "tradeoff": "Convenient random access, but defeats the streaming win on large transcripts."
         }
-      ]
+      ],
+      "transition": "That efficiency reflects a broader stance about where work belongs."
     },
     {
       "id": "p3",
@@ -464,7 +481,8 @@
           "note": "See McIlroy's summary: make each program do one thing well and expect its output to become another program's input.",
           "summary": "The Unix philosophy favors small programs that each do one thing well and combine through simple, text-based interfaces. McIlroy's famous formulation is to write programs that do one thing well and that work together, expecting the output of one to be the input of another. This is the lineage behind Goldy's parse-to-nodes-to-render pipeline."
         }
-      ]
+      ],
+      "transition": "With the approach settled, the parser was actually written."
     },
     {
       "id": "n12",
@@ -495,7 +513,8 @@
       "detail": "# /Users/vbatocanin/Dev/GitHub/goldy/skills/goldy/scripts/parse_transcript.py\n\n#!/usr/bin/env python3\n\"\"\"Goldy \u2014 transcript parser.\n\nReads a Claude Code session transcript (JSONL) and distills it into an ordered\nlist of *nodes*:\n\n  - \"decision\" nodes  -> Claude's reasoning / narration before it acts\n  - \"action\"   nodes  -> a concrete tool call (Bash, Edit, Write, WebFetch, ...)\n                         paired with a short excerpt of its result\n\nThe output JSON is intentionally *un-enriched*: it carries the raw facts. The\nGoldy skill (i.e. Claude itself) then fills in `rationale` and `materials` for\neach node before the renderer turns it into HTML.\n\nUsage:\n    python3 parse_transcript.py <transcript.jsonl> [-o nodes.json]\n    python3 parse_transcript.py --latest [-o nodes.json]   # newest session for cwd\n\"\"\"\nimport argparse\nimport glob\nimport json\nimport os\nimport sys\n\nMAX_RESULT_CHARS = 1200\nMAX_DETAIL_CHARS = 4000\n\n\ndef project_dir_for_cwd(cwd):\n    \"\"\"Claude Code stores transcripts under ~/.claude/projects/<slug> where the\n    slug is the absolute cwd with every '/' (and '.') turned into '-'.\"\"\"\n    slug = cwd.replace(\"/\", \"-\").replace(\".\", \"-\")\n    return os.path.expanduser(f\"~/.claude/projects/{slug}\")\n\n\ndef find_latest_transcript():\n    pdir = project_dir_for_cwd(os.getcwd())\n    files = glob.glob(os.path.join(pdir, \"*.jsonl\"))\n    if not files:\n        sys.exit(f\"goldy: no transcripts found in {pdir}\")\n    return max(files, key=os.path.getmtime)\n\n\ndef text_of(block):\n    return (block.get(\"text\") or block.get(\"thinking\") or \"\").strip()\n\n\ndef first_line(s, n=90):\n    s = \" \".join(s.split())\n    return s if len(s) <= n else s[: n - 1] + \"\u2026\"\n\n\ndef clip(s, n):\n    s = s or \"\"\n    return s if len(s) <= n else s[:n] + f\"\\n\u2026[truncated {len(s) - n} chars]\"\n\n\ndef describe_tool(name, inp):\n    \"\"\"Produce (title, detail) for an action node from a tool_use block.\"\"\"\n    inp = inp or {}\n    if name == \"Bash\":\n        return inp.get(\"description\") or \"Run shell command\", inp.get(\"command\", \"\")\n    if name in (\"Edit\", \"Write\"):\n        path = inp.get(\"file_path\", \"?\")\n        verb = \"Write\" if name == \"Write\" else \"Edit\"\n        body = inp.get(\"content\") or inp.get(\"new_string\") or \"\"\n        return f\"{verb} {os.path.basename(path)}\", f\"# {path}\\n\\n{body}\"\n    if name == \"Read\":\n        return f\"Read {os.path.basename(inp.get('file_path', '?'))}\", inp.get(\"file_path\", \"\")\n    if name in (\"WebFetch\", \"WebSearch\"):\n        return f\"{name}: {inp.get('url') or inp.get('query', '')}\", json.dumps(inp, indent=2)\n    if name in (\"Grep\", \"Glob\"):\n        return f\"{name} {inp.get('pattern', '')}\", json.dumps(inp, indent=2)\n    if name in (\"Agent\", \"Task\"):\n        return f\"Delegate: {inp.get('description', 'subagent')}\", inp.get(\"prompt\", \"\")\n    # Fallback: show the tool name + its input\n    return name, json.dumps(inp, indent=2)\n\n\ndef result_text(result):\n    \"\"\"tool_result content may be a string or a list of blocks.\"\"\"\n    c = result.get(\"content\")\n    if isinstance(c, str):\n        return c\n    if isinstance(c, list):\n        out = []\n        for b in c:\n            if isinstance(b, dict):\n                out.append(b.get(\"text\") or b.get(\"content\") or \"\")\n            else:\n                out.append(str(b))\n        return \"\\n\".join(out)\n    return \"\"\n\n\ndef parse(path):\n    rows = []\n    with open(path) as fh:\n        for line in fh:\n            line = line.strip()\n            if not line:\n                continue\n            try:\n                rows.append(json.loads(line))\n            except json.JSONDecodeError:\n                continue\n\n    # Index every tool_result by its tool_use_id so actions can be paired.\n    results = {}\n    for r in rows:\n        if r.get(\"type\") != \"user\":\n            continue\n        for b in r.get(\"message\", {}).get(\"content\", []) or []:\n            if isinstance(b, dict) and b.get(\"type\") == \"tool_result\":\n                results[b.get(\"tool_use_id\")] = b\n\n    meta = {\n        \"session_id\": None,\n        \"p\n\u2026[truncated 3841 chars]",
       "result_excerpt": "File created successfully at: /Users/vbatocanin/Dev/GitHub/goldy/skills/goldy/scripts/parse_transcript.py (file state is current in your context \u2014 no need to Read it back)",
       "status": "ok",
-      "timestamp": "2026-06-28T15:43:56.585Z"
+      "timestamp": "2026-06-28T15:43:56.585Z",
+      "transition": "Writing it surfaced a question about how much output to keep."
     },
     {
       "id": "o2",
@@ -516,7 +535,8 @@
           "url": "https://platform.claude.com/docs/en/about-claude/models",
           "note": "Why bounding the text the model reads during enrichment controls cost."
         }
-      ]
+      ],
+      "transition": "Capping output also helps keep something dangerous out of the report."
     },
     {
       "id": "s1",
@@ -538,7 +558,8 @@
           "note": "The exact weakness a trace tool risks: leaking secrets through captured output.",
           "summary": "CWE-532 is the weakness where an application writes sensitive data (credentials, tokens, personal data) into logs or trace files that are less protected than the data deserves. The fix is to keep secrets out of captured output and to scrub or redact before anything is persisted or shared. A session-trace tool like Goldy is squarely in this risk category, which is why it caps and scans output before rendering."
         }
-      ]
+      ],
+      "transition": "With extraction safe and bounded, the final stage could be designed."
     },
     {
       "id": "n13",
@@ -564,7 +585,7 @@
           "note": "A practical tutorial for building the kind of keyframe effects the report uses."
         }
       ],
-      "title": "Now the renderer \u2014 a standalone, dependency-free Notion-style HTML document with the node\u2026",
+      "title": "Render one self-contained HTML report",
       "summary": "Now the renderer \u2014 a standalone, dependency-free Notion-style HTML document with the node graph, chips, animations, and material dropdowns:",
       "timestamp": "2026-06-28T15:44:03.189Z",
       "alternatives": [
@@ -582,7 +603,8 @@
           "tradeoff": "Rich and componentized, but needs bundling and a server, and will rot as its dependencies age."
         }
       ],
-      "priority": "high"
+      "priority": "high",
+      "transition": "That design then had to become real code."
     },
     {
       "id": "n14",
@@ -613,7 +635,8 @@
       "detail": "# /Users/vbatocanin/Dev/GitHub/goldy/skills/goldy/scripts/render.py\n\n#!/usr/bin/env python3\n\"\"\"Goldy \u2014 renderer.\n\nTurns an (enriched) nodes JSON into a single self-contained, Notion-styled HTML\nfile: a vertical graph of decision/action nodes, each with a rationale and a\ncollapsible \"Learn more\" drawer that links every supporting article or, when no\nURL is available, renders a nested explainer document inline.\n\nUsage:\n    python3 render.py nodes.json -o goldy-report.html\n\"\"\"\nimport argparse\nimport html\nimport json\nimport re\nimport sys\nfrom datetime import datetime\n\n# ---------------------------------------------------------------------------\n# tiny, safe markdown -> html (paragraphs, code, bold/italic, links, lists)\n# ---------------------------------------------------------------------------\ndef md(text):\n    if not text:\n        return \"\"\n    text = html.escape(text)\n    # fenced code\n    def fence(m):\n        return f\"<pre class='code'>{m.group(1)}</pre>\"\n    text = re.sub(r\"```[a-zA-Z0-9]*\\n(.*?)```\", fence, text, flags=re.S)\n    # inline code\n    text = re.sub(r\"`([^`]+)`\", r\"<code>\\1</code>\", text)\n    # links [t](u)\n    text = re.sub(r\"\\[([^\\]]+)\\]\\((https?://[^)]+)\\)\",\n                  r\"<a href='\\2' target='_blank' rel='noreferrer'>\\1</a>\", text)\n    # bold / italic\n    text = re.sub(r\"\\*\\*([^*]+)\\*\\*\", r\"<strong>\\1</strong>\", text)\n    text = re.sub(r\"(?<!\\*)\\*([^*]+)\\*(?!\\*)\", r\"<em>\\1</em>\", text)\n    # paragraphs / line breaks\n    blocks = []\n    for para in re.split(r\"\\n\\s*\\n\", text.strip()):\n        if para.startswith(\"<pre\"):\n            blocks.append(para)\n        elif re.match(r\"\\s*[-*] \", para):\n            items = \"\".join(f\"<li>{re.sub(r'^\\s*[-*] ', '', ln)}</li>\"\n                             for ln in para.splitlines() if ln.strip())\n            blocks.append(f\"<ul>{items}</ul>\")\n        else:\n            blocks.append(\"<p>\" + para.replace(\"\\n\", \"<br>\") + \"</p>\")\n    return \"\\n\".join(blocks)\n\n\nKIND = {\n    \"prompt\":   {\"label\": \"Request\",  \"icon\": \"\u2726\", \"cls\": \"k-prompt\"},\n    \"decision\": {\"label\": \"Decision\", \"icon\": \"\u25c6\", \"cls\": \"k-decision\"},\n    \"action\":   {\"label\": \"Action\",   \"icon\": \"\u25b8\", \"cls\": \"k-action\"},\n}\n\nTOOL_ICON = {\n    \"Bash\": \"\u2318\", \"Edit\": \"\u270e\", \"Write\": \"\u271a\", \"Read\": \"\u25a4\", \"Grep\": \"\u2315\",\n    \"Glob\": \"\u2315\", \"WebFetch\": \"\ud83c\udf10\", \"WebSearch\": \"\ud83d\udd0e\", \"Agent\": \"\ud83e\udd16\", \"Task\": \"\ud83e\udd16\",\n}\n\n\ndef chip(text, cls=\"\"):\n    return f\"<span class='chip {cls}'>{html.escape(text)}</span>\"\n\n\ndef materials_html(materials):\n    if not materials:\n        return (\"<div class='mat-empty'>No external references attached to this \"\n                \"step.</div>\")\n    out = []\n    for m in materials:\n        title = html.escape(m.get(\"title\", \"Reference\"))\n        note = md(m.get(\"note\", \"\"))\n        url = m.get(\"url\")\n        doc = m.get(\"doc\")\n        if url:\n            host = re.sub(r\"^https?://(www\\.)?\", \"\", url).split(\"/\")[0]\n            out.append(\n                f\"<a class='mat-link' href='{html.escape(url)}' target='_blank' \"\n                f\"rel='noreferrer'><span class='mat-fav'>\ud83d\udd17</span>\"\n                f\"<span class='mat-body'><span class='mat-title'>{title}</span>\"\n                f\"<span class='mat-host'>{html.escape(host)}</span>\"\n                f\"{f'<span class=mat-note>{note}</span>' if note else ''}</span></a>\")\n        elif doc:\n            out.append(\n                \"<details class='mat-doc'><summary><span class='mat-fav'>\ud83d\udcc4</span>\"\n                f\"<span class='mat-title'>{title}</span>\"\n                \"<span class='mat-host'>nested explainer</span></summary>\"\n                f\"<div class='mat-doc-body'>{md(doc)}</div></details>\")\n        else:\n            out.append(f\"<div class='mat-link'><span class='mat-fav'>\u2022</span>\"\n                       f\"<span class='mat-body'><span class='mat-title'>{title}\"\n                       f\"</span>{note}</span></div>\")\n    return \"\\n\".join(out)\n\n\ndef node_html(n, idx):\n    k = KIND.get(n[\"kind\"], KIND[\"decision\"])\n    chips = [chip(k[\"label\"], k[\"cls\"])]\n    if n.get(\"tool\"):\n\u2026[truncated 10230 chars]",
       "result_excerpt": "File created successfully at: /Users/vbatocanin/Dev/GitHub/goldy/skills/goldy/scripts/render.py (file state is current in your context \u2014 no need to Read it back)",
       "status": "ok",
-      "timestamp": "2026-06-28T15:45:11.885Z"
+      "timestamp": "2026-06-28T15:45:11.885Z",
+      "transition": "Once written, the renderer had to be verified."
     },
     {
       "id": "t1",
@@ -641,7 +664,8 @@
           "url": "https://playwright.dev/python/docs/intro",
           "note": "Driving a real browser to render, screenshot and assert on the UI."
         }
-      ]
+      ],
+      "transition": "The way it was verified points to one last principle."
     },
     {
       "id": "p4",
@@ -660,7 +684,8 @@
           "url": "https://developer.mozilla.org/en-US/docs/Web/URI/Schemes/data",
           "note": "Background on bundling assets inline so a file stands alone."
         }
-      ]
+      ],
+      "transition": ""
     }
   ]
 }

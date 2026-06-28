@@ -132,6 +132,18 @@ Now edit `.goldy/nodes.json`, applying what you learned. Keep the `meta` block.
 
 For each node add:
 
+- **`title`**: a short, summarized label (aim for under ~8 words), not a sentence
+  of raw transcript text. It is what shows on the node's collapsed bubble, so a
+  decision like "I'll start by understanding the current state of the goldy
+  directory and how..." becomes "Survey the project's starting point". The
+  renderer truncates over-long titles as a fallback, but write a real label.
+- **`transition`**: a single connective sentence that bridges this node to the
+  next step, so the bubbles read as a story top to bottom ("That meant inspecting
+  the project and where Claude Code keeps its skills."). Write one per node in
+  document order; the last node needs none. When the detail-level or type filters
+  discard nodes, the renderer stitches the discarded nodes' transitions together
+  into the surviving gap, so keep each sentence able to stand on its own and flow
+  into the next.
 - **`rationale`**: a tight 1 to 3 sentence "why". Not what happened (the node
   shows that) but why it was the right call given the alternatives. For an action
   that produces or changes something, open with the preparation: what was learned
@@ -215,7 +227,15 @@ animating while the body unfolds; the caret flips and the bubble's bead grows in
 the card's spine dot. Bubbles are keyboard-focusable, so Enter or Space toggles
 them too. Two fold controls, Expand all and Collapse all, drive the whole graph at
 once. The spine is drawn per node, so the connecting line begins at the first bead
-and ends at the last, with no stub past either end. Hovering a card lifts
+and ends at the last, with no stub past either end.
+
+**Priority staircase and story.** Bubbles step right by priority: high-priority
+nodes sit closest to the spine and lower-priority ones cascade outward, so the
+shape of the graph shows the hierarchy at a glance. Between every two bubbles, the
+node's `transition` sentence is shown as connective narration, turning the graph
+into a walkthrough you can read top to bottom. If a reader filters nodes out (by
+detail level or type), the discarded nodes' transitions are stitched into the gap
+so the story never breaks. Hovering a card lifts
 it, grows its spine dot and lights its connector. All of this is self-contained
 CSS and JS with a `prefers-reduced-motion` fallback, so the document stays a
 single file with no dependencies.

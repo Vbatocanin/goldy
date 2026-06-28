@@ -215,6 +215,50 @@ for _, anchor, node in PRINCIPLES + SECURITY + OPTIM + TESTING + NETWORKING:
     if idx is not None:
         d["nodes"].insert(idx + 1, node)
 
+# 4. short, summarized titles for the long raw decision headlines, so each bubble
+# reads as a label rather than a paragraph.
+TITLES = {
+    "n2": "Survey the project's starting point",
+    "n5": "Source the report from the session transcript",
+    "n9": "Lock in the parse model: decisions and actions",
+    "n11": "Build the transcript parser in Python",
+    "n13": "Render one self-contained HTML report",
+}
+
+# 5. story transitions: a one-sentence bridge from each node to the next, in the
+# final node order. They turn the bubbles into a walkthrough; when filters discard
+# nodes, the renderer stitches the discarded ones' sentences into the gap.
+TRANSITIONS = {
+    "n1": "To turn that brief into a plan, the first move was to see what already existed.",
+    "n2": "That meant inspecting the project and where Claude Code keeps its skills and agents.",
+    "n3": "The empty layout raised a question best answered by a real example.",
+    "n4": "Reading an installed skill revealed a pattern worth naming.",
+    "p1": "With the skill format understood, the question became where the report's content comes from.",
+    "n5": "The answer was the session transcript, so its on-disk format had to be opened up.",
+    "n6": "Seeing the raw events, the next step was to measure how often each kind occurs.",
+    "n7": "Those events also reach out to the web, which is worth a short detour.",
+    "net1": "Back in the transcript, one more check settled how a single turn is ordered.",
+    "n8": "With the shape fully confirmed, the data model could be locked in.",
+    "n9": "That decision rests on a principle worth stating plainly.",
+    "p2": "It pairs with a second habit visible all through the build.",
+    "p5": "Grounded by that preparation, the first real change to the repo could happen.",
+    "n10": "Creating files and an installer immediately raises a safety concern.",
+    "s2": "With the repo laid out safely, the first script could be designed.",
+    "n11": "How that script reads the file is a performance choice worth noting.",
+    "o1": "That efficiency reflects a broader stance about where work belongs.",
+    "p3": "With the approach settled, the parser was actually written.",
+    "n12": "Writing it surfaced a question about how much output to keep.",
+    "o2": "Capping output also helps keep something dangerous out of the report.",
+    "s1": "With extraction safe and bounded, the final stage could be designed.",
+    "n13": "That design then had to become real code.",
+    "n14": "Once written, the renderer had to be verified.",
+    "t1": "The way it was verified points to one last principle.",
+}
+for n in d["nodes"]:
+    if n["id"] in TITLES:
+        n["title"] = TITLES[n["id"]]
+    n["transition"] = TRANSITIONS.get(n["id"], "")
+
 p.write_text(json.dumps(d, indent=2))
 print("enriched", sum(1 for n in d["nodes"] if n.get("rationale")), "nodes;",
       sum(1 for n in d["nodes"] if n["kind"] == "principle"), "principles")

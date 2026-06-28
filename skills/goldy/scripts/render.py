@@ -43,6 +43,17 @@ def esc(s):
     return html.escape(nd(s))
 
 
+def short_title(s, limit=64):
+    """A node title shown on its bubble should be a short label, not a wall of
+    raw prompt text. Collapse whitespace and, if it is still too long, cut at a
+    word boundary with an ellipsis. Enrichment should set a concise title; this
+    is the safety net for titles that come straight from the transcript."""
+    s = re.sub(r"\s+", " ", nd(s or "").strip())
+    if len(s) <= limit:
+        return s
+    return s[:limit].rsplit(" ", 1)[0].rstrip(" ,;:-") + "…"
+
+
 # ---------------------------------------------------------------------------
 # tiny, safe markdown -> html (paragraphs, code, bold/italic, links, lists)
 # ---------------------------------------------------------------------------
@@ -1048,13 +1059,18 @@ def node_html(n, idx):
         f"{icon('books', 'dw-ic')} {label} {badge}</summary>"
         f"<div class='mat-wrap'>{materials_html(mats)}</div></details>")
 
+    transition = esc(n.get("transition", ""))
+    brcls = "bridge" if n.get("transition") else "bridge empty"
+    bridge = (f'<div class="{brcls}" data-transition="{transition}">'
+              f'<span class="br-ic">{icon("chevron")}</span>'
+              f'<span class="br-text">{transition}</span></div>')
     return f"""
     <div class="node collapsed {k['cls']}" data-kind="{n['kind']}" data-prio="{prio}" data-rank="{PRIORITY_RANK[prio]}" style="--i:{idx}">
       <div class="spine-dot">{icon(k['icon'])}</div>
       <div class="card">
         <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
-            <h3 class="node-title">{esc(n.get('title','Untitled step'))}</h3>
+            <h3 class="node-title">{esc(short_title(n.get('title','Untitled step')))}</h3>
             <div class="chips">{''.join(chips)}</div>
           </div>
           <span class="node-caret">{icon('chevron')}</span>
@@ -1063,6 +1079,7 @@ def node_html(n, idx):
         {''.join(body)}
         </div></div>
       </div>
+      {bridge}
     </div>"""
 
 
@@ -1272,8 +1289,13 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-optim::before{background:#d99412} .k-test::before{background:#2f9d63}
 .k-net::before{background:#1f87b0}
 .node{position:relative;margin:0 0 18px;opacity:0;transform:translateY(14px);
-  animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms)}
+  animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms);
+  --indent:0px}
 @keyframes rise{to{opacity:1;transform:none}}
+/* priority staircase: lower-priority nodes step further right off the spine, so
+   the key steps sit closest to the line and minor ones cascade outward */
+.node[data-rank="2"]{--indent:28px}
+.node[data-rank="1"]{--indent:56px}
 .spine-dot{position:absolute;left:-34px;top:16px;width:24px;height:24px;border-radius:50%;
   display:grid;place-items:center;font-size:12px;color:#fff;background:var(--gold);
   box-shadow:0 0 0 5px var(--bg),0 2px 6px rgba(0,0,0,.15);z-index:1;
@@ -1288,13 +1310,24 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-security .spine-dot{background:#c0392b} .k-optim .spine-dot{background:#d99412}
 .k-test .spine-dot{background:#2f9d63} .k-net .spine-dot{background:#1f87b0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:18px 20px;
+  box-shadow:var(--shadow);padding:18px 20px;margin-left:var(--indent,0px);
   transition:transform .25s,box-shadow .28s,border-color .28s,background-color .28s,padding .28s,border-radius .3s cubic-bezier(.2,.7,.3,1)}
 .card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(40,36,28,.08),0 18px 40px rgba(40,36,28,.08);
   border-color:#ded8cf}
-.node::after{content:"";position:absolute;left:-22px;top:18px;width:18px;height:2px;
-  background:var(--line);transition:background .2s,width .2s}
-.node:hover::after{background:var(--gold);width:22px}
+/* connector tick: stretches from the spine to the card, so it spans the staircase
+   indent and visibly links each stepped-out card back to its bead */
+.node::after{content:"";position:absolute;left:-22px;top:18px;height:2px;
+  width:calc(18px + var(--indent,0px));background:var(--line);transition:background .2s,width .2s}
+.node:hover::after{background:var(--gold)}
+/* story bridge: the connective sentence that ties this step to the next. It sits
+   in the gap below the card, along the spine. When detail or type filters discard
+   nodes, JS stitches their sentences together so the narrative stays unbroken. */
+.bridge{display:flex;align-items:flex-start;gap:7px;margin:11px 0 1px;padding-left:3px;
+  color:#94897c;font-size:12.5px;font-style:italic;line-height:1.5;max-width:60ch}
+.bridge.empty{display:none}
+.br-ic{flex:none;margin-top:1px;color:#c4bdb0;line-height:0}
+.br-ic .ic{width:13px;height:13px;transform:rotate(90deg)}
+.br-text{flex:1;min-width:0}
 .k-decision .card{border-left:3px solid var(--gold)}
 .k-action .card{border-left:3px solid var(--blue)}
 .k-prompt .card{border-left:3px solid var(--violet)}
@@ -1534,6 +1567,28 @@ document.querySelectorAll('.drawer.materials').forEach(d=>{
   var toggles=document.querySelectorAll('.h-toggle');
   var count=document.querySelector('.dc-count');
   var nodes=[].slice.call(graph.querySelectorAll('.node'));
+  function isVisible(n){return getComputedStyle(n).display!=='none';}
+  function bridgeText(n){var b=n.querySelector('.bridge');return b?b.getAttribute('data-transition'):'';}
+  // each visible node's bridge narrates the path to the next visible node: its own
+  // sentence plus the sentences of every discarded node in between, stitched up.
+  function updateBridges(){
+    for(var i=0;i<nodes.length;i++){
+      var br=nodes[i].querySelector('.bridge');
+      if(!br)continue;
+      if(!isVisible(nodes[i])){br.classList.add('empty');continue;}
+      var parts=[],own=bridgeText(nodes[i]);
+      if(own)parts.push(own);
+      var next=false;
+      for(var j=i+1;j<nodes.length;j++){
+        if(isVisible(nodes[j])){next=true;break;}
+        var t=bridgeText(nodes[j]);if(t)parts.push(t);
+      }
+      var span=br.querySelector('.br-text');
+      if(!next||!parts.length){br.classList.add('empty');if(span)span.textContent='';continue;}
+      if(span)span.textContent=parts.join(' ');
+      br.classList.remove('empty');
+    }
+  }
   function update(){
     var min=MINRANK[graph.getAttribute('data-detail')]||1;
     // each type chip shows how many of its kind survive the current level
@@ -1551,6 +1606,7 @@ document.querySelectorAll('.drawer.materials').forEach(d=>{
       nodes.forEach(function(n){if(getComputedStyle(n).display!=='none')vis++;});
       count.textContent='showing '+vis+' of '+nodes.length+' steps';
     }
+    updateBridges();
   }
   btns.forEach(function(b){
     b.addEventListener('click',function(){

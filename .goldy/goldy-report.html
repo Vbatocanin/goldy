@@ -129,8 +129,13 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-optim::before{background:#d99412} .k-test::before{background:#2f9d63}
 .k-net::before{background:#1f87b0}
 .node{position:relative;margin:0 0 18px;opacity:0;transform:translateY(14px);
-  animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms)}
+  animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms);
+  --indent:0px}
 @keyframes rise{to{opacity:1;transform:none}}
+/* priority staircase: lower-priority nodes step further right off the spine, so
+   the key steps sit closest to the line and minor ones cascade outward */
+.node[data-rank="2"]{--indent:28px}
+.node[data-rank="1"]{--indent:56px}
 .spine-dot{position:absolute;left:-34px;top:16px;width:24px;height:24px;border-radius:50%;
   display:grid;place-items:center;font-size:12px;color:#fff;background:var(--gold);
   box-shadow:0 0 0 5px var(--bg),0 2px 6px rgba(0,0,0,.15);z-index:1;
@@ -145,13 +150,24 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-security .spine-dot{background:#c0392b} .k-optim .spine-dot{background:#d99412}
 .k-test .spine-dot{background:#2f9d63} .k-net .spine-dot{background:#1f87b0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:18px 20px;
+  box-shadow:var(--shadow);padding:18px 20px;margin-left:var(--indent,0px);
   transition:transform .25s,box-shadow .28s,border-color .28s,background-color .28s,padding .28s,border-radius .3s cubic-bezier(.2,.7,.3,1)}
 .card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(40,36,28,.08),0 18px 40px rgba(40,36,28,.08);
   border-color:#ded8cf}
-.node::after{content:"";position:absolute;left:-22px;top:18px;width:18px;height:2px;
-  background:var(--line);transition:background .2s,width .2s}
-.node:hover::after{background:var(--gold);width:22px}
+/* connector tick: stretches from the spine to the card, so it spans the staircase
+   indent and visibly links each stepped-out card back to its bead */
+.node::after{content:"";position:absolute;left:-22px;top:18px;height:2px;
+  width:calc(18px + var(--indent,0px));background:var(--line);transition:background .2s,width .2s}
+.node:hover::after{background:var(--gold)}
+/* story bridge: the connective sentence that ties this step to the next. It sits
+   in the gap below the card, along the spine. When detail or type filters discard
+   nodes, JS stitches their sentences together so the narrative stays unbroken. */
+.bridge{display:flex;align-items:flex-start;gap:7px;margin:11px 0 1px;padding-left:3px;
+  color:#94897c;font-size:12.5px;font-style:italic;line-height:1.5;max-width:60ch}
+.bridge.empty{display:none}
+.br-ic{flex:none;margin-top:1px;color:#c4bdb0;line-height:0}
+.br-ic .ic{width:13px;height:13px;transform:rotate(90deg)}
+.br-text{flex:1;min-width:0}
 .k-decision .card{border-left:3px solid var(--gold)}
 .k-action .card{border-left:3px solid var(--blue)}
 .k-prompt .card{border-left:3px solid var(--violet)}
@@ -380,7 +396,7 @@ footer b{color:var(--gold)}
   <span class="eyebrow"><span class="dot"></span>Goldy walkthrough</span>
   <h1>Building Goldy</h1>
   <p class="intro">Goldy is a set of Claude Code skills and agents that turn a session into a readable report. This walkthrough traces how it was built, step by step, with the reasoning and sources behind each decision.</p>
-  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 21:15</span></div>
+  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 21:28</span></div>
   <div class='detail-ctl'><span class='dc-lead'>Detail level</span><div class='dc-seg' role='group' aria-label='Detail level'><button type='button' class='dc-btn' data-level='essentials' title='Only the key requests and decisions.'>Essentials</button><button type='button' class='dc-btn active' data-level='standard' title='Key steps plus the actions that carried them out.'>Standard</button><button type='button' class='dc-btn' data-level='everything' title='Every node, including minor and supporting steps.'>Everything</button></div><span class='dc-count'></span></div>
   <div class="filters">
     <span class="filters-lead">Filter by type</span>
@@ -412,6 +428,7 @@ footer b{color:var(--gold)}
 <div class='mat-link mat-card'><a class='mat-open' href='https://code.claude.com/docs/en/sub-agents' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 4.2C6.4 3.2 4 3.2 2.6 3.7v7.8C4 11 6.4 11 8 12c1.6-1 4-1 5.4-.5V3.7C12 3.2 9.6 3.2 8 4.2zM8 4.2V12"/></svg></span><span class='mat-body'><span class='mat-title'>Create custom subagents, Claude Code Docs<span class='mat-kind mk-ref'>docs</span></span><span class='mat-host'>code.claude.com</span><span class=mat-note><p>Defines the ~/.claude/agents/*.md format and tool and model scoping used by goldy-historian.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>Custom subagents are Markdown files with YAML frontmatter stored in .claude/agents (project) or ~/.claude/agents (user). Each subagent gets its own system prompt, its own tool allowlist and optionally its own model, and Claude delegates to one automatically when a task matches its description. They can run in parallel and with different permission scopes, for example a read-only researcher alongside a full-access implementer.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="To turn that brief into a plan, the first move was to see what already existed."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">To turn that brief into a plan, the first move was to see what already existed.</span></div>
     </div>
 
     <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:1">
@@ -419,7 +436,7 @@ footer b{color:var(--gold)}
       <div class="card">
         <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
-            <h3 class="node-title">I&#x27;ll start by understanding the current state of the `goldy` directory and how Claude Cod…</h3>
+            <h3 class="node-title">Survey the project&#x27;s starting point</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:10</span></div>
           </div>
           <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
@@ -428,6 +445,7 @@ footer b{color:var(--gold)}
         <div class='node-summary'><p>I&#x27;ll start by understanding the current state of the <code>goldy</code> directory and how Claude Code skills/agents are structured.</p></div><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>Before designing anything, ground the build in reality: the actual on-disk layout of skills and agents and the conventions a real installed skill (sentry-cli) follows. Matching existing conventions beats inventing a format Claude Code will not load.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more <span class='mat-count'>1</span></summary><div class='mat-wrap'><div class='mat-link mat-card'><a class='mat-open' href='https://code.claude.com/docs/en/skills' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 4.2C6.4 3.2 4 3.2 2.6 3.7v7.8C4 11 6.4 11 8 12c1.6-1 4-1 5.4-.5V3.7C12 3.2 9.6 3.2 8 4.2zM8 4.2V12"/></svg></span><span class='mat-body'><span class='mat-title'>Extend Claude with Skills, Claude Code Docs<span class='mat-kind mk-ref'>docs</span></span><span class='mat-host'>code.claude.com</span><span class=mat-note><p>The SKILL.md frontmatter and progressive-disclosure model Goldy&#x27;s skill is built on.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>A skill is a folder containing a SKILL.md file whose YAML frontmatter (name and description) is preloaded into the system prompt so Claude knows when to use it. The fuller instructions, plus optional scripts, references and assets, load only when the skill is actually triggered. This progressive disclosure keeps base context small while still giving the agent deep, on-demand capability.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="That meant inspecting the project and where Claude Code keeps its skills and agents."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">That meant inspecting the project and where Claude Code keeps its skills and agents.</span></div>
     </div>
 
     <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:2">
@@ -452,6 +470,7 @@ total 0
 ---AGENTS---</div></details><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>Listing the project plus the skills and agents directories answers two questions at once, is this a greenfield repo and what is the canonical install location, in a single round trip.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more <span class='mat-count'>1</span></summary><div class='mat-wrap'><div class='mat-link mat-card'><a class='mat-open' href='https://code.claude.com/docs/en/settings' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6.7 9.3l2.6-2.6M7.2 5.1l1-1a2.6 2.6 0 013.7 3.7l-1 1M8.8 10.9l-1 1a2.6 2.6 0 01-3.7-3.7l1-1"/></svg></span><span class='mat-body'><span class='mat-title'>Claude Code settings and directories</span><span class='mat-host'>code.claude.com</span><span class=mat-note><p>Where user-level skills and agents live (~/.claude).</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="The empty layout raised a question best answered by a real example."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">The empty layout raised a question best answered by a real example.</span></div>
     </div>
 
     <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:3">
@@ -499,6 +518,7 @@ Best practices and operational guidance for AI coding agents using the Sentry CL
 …[truncated 2652 chars]</div></details><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>The sentry-cli skill is a working reference implementation. Reading its SKILL.md frontmatter and references layout reveals the exact schema (name, description, requires) so Goldy&#x27;s skill is loadable rather than guesswork.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more <span class='mat-count'>1</span></summary><div class='mat-wrap'><div class='mat-link mat-card'><a class='mat-open' href='https://code.claude.com/docs/en/skills' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 4.2C6.4 3.2 4 3.2 2.6 3.7v7.8C4 11 6.4 11 8 12c1.6-1 4-1 5.4-.5V3.7C12 3.2 9.6 3.2 8 4.2zM8 4.2V12"/></svg></span><span class='mat-body'><span class='mat-title'>Extend Claude with Skills, Claude Code Docs<span class='mat-kind mk-ref'>docs</span></span><span class='mat-host'>code.claude.com</span><span class=mat-note><p>The SKILL.md frontmatter and progressive-disclosure model Goldy&#x27;s skill is built on.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>A skill is a folder containing a SKILL.md file whose YAML frontmatter (name and description) is preloaded into the system prompt so Claude knows when to use it. The fuller instructions, plus optional scripts, references and assets, load only when the skill is actually triggered. This progressive disclosure keeps base context small while still giving the agent deep, on-demand capability.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Reading an installed skill revealed a pattern worth naming."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Reading an installed skill revealed a pattern worth naming.</span></div>
     </div>
 
     <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:4">
@@ -516,6 +536,7 @@ Best practices and operational guidance for AI coding agents using the Sentry CL
 <div class='mat-link mat-card'><a class='mat-open' href='https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>Equipping agents for the real world with Agent Skills, Anthropic<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>anthropic.com</span><span class=mat-note><p>Anthropic&#x27;s rationale for the skills architecture: why bundled scripts plus instructions beat a megaprompt.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>Anthropic frames skills as a way to package real-world procedures as instructions plus bundled code and assets, instead of stuffing everything into a single prompt. Only a skill&#x27;s short description stays in context until it is invoked, so an agent can carry many capabilities without bloating its system prompt. The result composes better and is easier to maintain than one giant instruction blob.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="With the skill format understood, the question became where the report&#x27;s content comes from."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">With the skill format understood, the question became where the report&#x27;s content comes from.</span></div>
     </div>
 
     <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:5">
@@ -523,7 +544,7 @@ Best practices and operational guidance for AI coding agents using the Sentry CL
       <div class="card">
         <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
-            <h3 class="node-title">The directory is empty - a fresh project. Goldy needs to capture Claude Code&#x27;s thinking/a…</h3>
+            <h3 class="node-title">Source the report from the session transcript</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:33</span></div>
           </div>
           <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
@@ -538,6 +559,7 @@ Best practices and operational guidance for AI coding agents using the Sentry CL
 <div class='mat-link mat-card'><a class='mat-open' href='https://jsonlines.org/' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x="2.2" y="5.2" width="11.6" height="5.6" rx="1"/><path d="M5 5.2v1.8M7.5 5.2v2.6M10 5.2v1.8M12.2 5.2v2.6"/></svg></span><span class='mat-body'><span class='mat-title'>JSON Lines (JSONL) format<span class='mat-kind mk-spec'>spec</span></span><span class='mat-host'>jsonlines.org</span><span class=mat-note><p>The append-friendly, line-delimited JSON format Claude Code uses for transcripts.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="The answer was the session transcript, so its on-disk format had to be opened up."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">The answer was the session transcript, so its on-disk format had to be opened up.</span></div>
     </div>
 
     <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:6">
@@ -567,6 +589,7 @@ permission-mode | keys: [&#x27;type&#x27;, &#x27;permissionMode&#x27;, &#x27;ses
 file-history-snapshot | keys: [&#x27;type&#x27;, &#x27;messageId&#x27;, &#x27;snapshot&#x27;, &#x27;isSnapshotUpdate&#x27;]</div></details><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>Do not trust assumptions about the log schema, inspect it. Dumping the first events&#x27; types and keys confirms where messages, modes and snapshots live before writing a parser against them.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more </summary><div class='mat-wrap'><div class='mat-empty'>No external references attached to this step.</div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Seeing the raw events, the next step was to measure how often each kind occurs."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Seeing the raw events, the next step was to measure how often each kind occurs.</span></div>
     </div>
 
     <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:7">
@@ -601,6 +624,7 @@ assistant content block types: [&#x27;thinking&#x27;]
 user content block types: [&#x27;tool_result&#x27;]</div></details><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>Counting event types and content-block types maps the whole transcript&#x27;s shape at a glance, confirming that reasoning (thinking and text) and actions (tool_use and tool_result) are cleanly separable into the two node kinds Goldy needs.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more <span class='mat-count'>1</span></summary><div class='mat-wrap'><div class='mat-link mat-card'><a class='mat-open' href='https://platform.claude.com/docs/en/build-with-claude/tool-use' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6.7 9.3l2.6-2.6M7.2 5.1l1-1a2.6 2.6 0 013.7 3.7l-1 1M8.8 10.9l-1 1a2.6 2.6 0 01-3.7-3.7l1-1"/></svg></span><span class='mat-body'><span class='mat-title'>Anthropic Messages API, tool use</span><span class='mat-host'>platform.claude.com</span><span class=mat-note><p>Explains the tool_use and tool_result pairing the parser relies on to match an action to its result.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Those events also reach out to the web, which is worth a short detour."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Those events also reach out to the web, which is worth a short detour.</span></div>
     </div>
 
     <div class="node collapsed k-net" data-kind="networking" data-prio="medium" data-rank="2" style="--i:8">
@@ -621,6 +645,7 @@ user content block types: [&#x27;tool_result&#x27;]</div></details><div class='r
 <div class='mat-link mat-card'><a class='mat-open' href='https://developer.mozilla.org/en-US/docs/Web/HTTP' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 4.2C6.4 3.2 4 3.2 2.6 3.7v7.8C4 11 6.4 11 8 12c1.6-1 4-1 5.4-.5V3.7C12 3.2 9.6 3.2 8 4.2zM8 4.2V12"/></svg></span><span class='mat-body'><span class='mat-title'>HTTP (MDN)<span class='mat-kind mk-ref'>docs</span></span><span class='mat-host'>developer.mozilla.org</span><span class=mat-note><p>The full reference for requests, responses, methods, headers and caching.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Back in the transcript, one more check settled how a single turn is ordered."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Back in the transcript, one more check settled how a single turn is ordered.</span></div>
     </div>
 
     <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:9">
@@ -658,6 +683,7 @@ THINK:
 TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></details><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>A final shape check of the actual thinking, text, tool_use ordering inside an assistant turn. This confirmed the reason-then-act grouping the parser uses to merge narration into one decision node ahead of its actions.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more </summary><div class='mat-wrap'><div class='mat-empty'>No external references attached to this step.</div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="With the shape fully confirmed, the data model could be locked in."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">With the shape fully confirmed, the data model could be locked in.</span></div>
     </div>
 
     <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:10">
@@ -665,7 +691,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       <div class="card">
         <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
-            <h3 class="node-title">I now understand the transcript shape: assistant messages carry `thinking`/`text`/`tool_u…</h3>
+            <h3 class="node-title">Lock in the parse model: decisions and actions</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:43:23</span></div>
           </div>
           <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
@@ -675,6 +701,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
 <p>I&#x27;ll create the canonical repo in <code>goldy/</code> (parser + renderer + skill + agent) and install it into <code>~/.claude</code>.</p></div><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>With the schema verified, the design locks in: decision nodes from thinking and text, action nodes from tool_use paired with their result. Verifying before building avoids a parser written against an imagined format.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more <span class='mat-count'>1</span></summary><div class='mat-wrap'><div class='mat-link mat-card'><a class='mat-open' href='https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>Equipping agents for the real world with Agent Skills, Anthropic<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>anthropic.com</span><span class=mat-note><p>Anthropic&#x27;s rationale for the skills architecture: why bundled scripts plus instructions beat a megaprompt.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>Anthropic frames skills as a way to package real-world procedures as instructions plus bundled code and assets, instead of stuffing everything into a single prompt. Only a skill&#x27;s short description stays in context until it is invoked, so an agent can carry many capabilities without bloating its system prompt. The result composes better and is easier to maintain than one giant instruction blob.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="That decision rests on a principle worth stating plainly."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">That decision rests on a principle worth stating plainly.</span></div>
     </div>
 
     <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:11">
@@ -692,6 +719,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
 <div class='mat-link mat-card'><a class='mat-open' href='https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M4 2.2h6.5a1 1 0 011 1v10.6H5a1 1 0 01-1-1z"/><path d="M4 12.3h7.5"/></svg></span><span class='mat-body'><span class='mat-title'>The Clean Architecture (Robert C. Martin)<span class='mat-kind mk-book'>book</span></span><span class='mat-host'>blog.cleancoder.com</span><span class=mat-note><p>Read the section &#x27;The Dependency Rule&#x27;: source dependencies may only point inward, which keeps outer details (UI, DB) swappable.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>The post collects several architectures (hexagonal, onion, others) into one model of concentric layers, with business rules at the center and frameworks, UI and databases at the edges. Its core is the Dependency Rule: source-code dependencies may only point inward, so inner layers know nothing about outer ones. That is what lets you swap a detail like the renderer or the database without touching the policy at the core.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="It pairs with a second habit visible all through the build."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">It pairs with a second habit visible all through the build.</span></div>
     </div>
 
     <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:12">
@@ -710,6 +738,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
 <div class='mat-link mat-card'><a class='mat-open' href='https://en.wiktionary.org/wiki/measure_twice_and_cut_once' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>Measure twice, cut once<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>en.wiktionary.org</span><span class=mat-note><p>The craft idiom for verifying before you commit to an irreversible step.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Grounded by that preparation, the first real change to the repo could happen."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Grounded by that preparation, the first real change to the repo could happen.</span></div>
     </div>
 
     <div class="node collapsed k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:13">
@@ -728,6 +757,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
 <div class='mat-link mat-card'><a class='mat-open' href='https://labex.io/learn/shell' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 3l6 2.4L8 7.8 2 5.4z"/><path d="M4.3 6.7v3.1c0 1 1.7 1.9 3.7 1.9s3.7-.9 3.7-1.9V6.7"/></svg></span><span class='mat-body'><span class='mat-title'>Shell Scripting Learning Path (LabEx)<span class='mat-kind mk-tut'>tutorial</span></span><span class='mat-host'>labex.io</span><span class=mat-note><p>Hands-on shell: pipes, redirection, variables, scripting.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>A systematic, hands-on path for the shell, covering pipes, redirection, variables and scripting through interactive exercises rather than video.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Creating files and an installer immediately raises a safety concern."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Creating files and an installer immediately raises a safety concern.</span></div>
     </div>
 
     <div class="node collapsed k-security" data-kind="security" data-prio="high" data-rank="3" style="--i:14">
@@ -745,6 +775,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
 <div class='mat-link mat-card'><a class='mat-open' href='https://en.wikipedia.org/wiki/Principle_of_least_privilege' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>Principle of least privilege<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>en.wikipedia.org</span><span class=mat-note><p>The access-control idea behind keeping the transcript directory private.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="With the repo laid out safely, the first script could be designed."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">With the repo laid out safely, the first script could be designed.</span></div>
     </div>
 
     <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:15">
@@ -752,7 +783,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       <div class="card">
         <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
-            <h3 class="node-title">Now the transcript parser - mechanical extraction of decision/action nodes from the JSONL:</h3>
+            <h3 class="node-title">Build the transcript parser in Python</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:43:27</span></div>
           </div>
           <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
@@ -763,6 +794,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
 <div class='mat-link mat-card'><a class='mat-open' href='https://realpython.com/python-json/' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 3l6 2.4L8 7.8 2 5.4z"/><path d="M4.3 6.7v3.1c0 1 1.7 1.9 3.7 1.9s3.7-.9 3.7-1.9V6.7"/></svg></span><span class='mat-body'><span class='mat-title'>Working with JSON Data in Python (Real Python)<span class='mat-kind mk-tut'>tutorial</span></span><span class='mat-host'>realpython.com</span><span class=mat-note><p>A hands-on walkthrough of reading and writing JSON in Python, the exact task the parser does.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="How that script reads the file is a performance choice worth noting."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">How that script reads the file is a performance choice worth noting.</span></div>
     </div>
 
     <div class="node collapsed k-optim" data-kind="optimization" data-prio="medium" data-rank="2" style="--i:16">
@@ -780,6 +812,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
 <div class='mat-link mat-card'><a class='mat-open' href='https://en.wikipedia.org/wiki/Time_complexity' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>Time complexity (Big O)<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>en.wikipedia.org</span><span class=mat-note><p>Framing the single-pass parse and the O(1) dict lookups.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>Big O describes how an algorithm&#x27;s running time grows with input size. A single pass over n lines is O(n), and a hash-map (dict) lookup is on average O(1) regardless of size. Indexing tool results into a dict once and then pairing them by id keeps the parser linear instead of quadratic.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="That efficiency reflects a broader stance about where work belongs."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">That efficiency reflects a broader stance about where work belongs.</span></div>
     </div>
 
     <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:17">
@@ -797,6 +830,7 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
 <div class='mat-link mat-card'><a class='mat-open' href='https://en.wikipedia.org/wiki/Unix_philosophy#Doug_McIlroy_on_Unix_programming' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>The Unix Philosophy<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>en.wikipedia.org</span><span class=mat-note><p>See McIlroy&#x27;s summary: make each program do one thing well and expect its output to become another program&#x27;s input.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>The Unix philosophy favors small programs that each do one thing well and combine through simple, text-based interfaces. McIlroy&#x27;s famous formulation is to write programs that do one thing well and that work together, expecting the output of one to be the input of another. This is the lineage behind Goldy&#x27;s parse-to-nodes-to-render pipeline.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="With the approach settled, the parser was actually written."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">With the approach settled, the parser was actually written.</span></div>
     </div>
 
     <div class="node collapsed k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:18">
@@ -934,6 +968,7 @@ Usage:
 <div class='mat-link mat-card'><a class='mat-open' href='https://en.wikipedia.org/wiki/Separation_of_concerns' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>Separation of concerns<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>en.wikipedia.org</span><span class=mat-note><p>Why parsing, enrichment and rendering are three swappable stages rather than one script.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Writing it surfaced a question about how much output to keep."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Writing it surfaced a question about how much output to keep.</span></div>
     </div>
 
     <div class="node collapsed k-optim" data-kind="optimization" data-prio="medium" data-rank="2" style="--i:19">
@@ -951,6 +986,7 @@ Usage:
 <div class='mat-link mat-card'><a class='mat-open' href='https://platform.claude.com/docs/en/about-claude/models' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 4.2C6.4 3.2 4 3.2 2.6 3.7v7.8C4 11 6.4 11 8 12c1.6-1 4-1 5.4-.5V3.7C12 3.2 9.6 3.2 8 4.2zM8 4.2V12"/></svg></span><span class='mat-body'><span class='mat-title'>Token-based pricing and context limits<span class='mat-kind mk-ref'>docs</span></span><span class='mat-host'>platform.claude.com</span><span class=mat-note><p>Why bounding the text the model reads during enrichment controls cost.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Capping output also helps keep something dangerous out of the report."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Capping output also helps keep something dangerous out of the report.</span></div>
     </div>
 
     <div class="node collapsed k-security" data-kind="security" data-prio="high" data-rank="3" style="--i:20">
@@ -968,6 +1004,7 @@ Usage:
 <div class='mat-link mat-card'><a class='mat-open' href='https://cwe.mitre.org/data/definitions/532.html' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>CWE-532: Insertion of Sensitive Information into Log File<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>cwe.mitre.org</span><span class=mat-note><p>The exact weakness a trace tool risks: leaking secrets through captured output.</p></span></span></a><details class='mat-sum'><summary><svg class='ic ms-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg> Read summary</summary><div class='mat-sum-body'><p>CWE-532 is the weakness where an application writes sensitive data (credentials, tokens, personal data) into logs or trace files that are less protected than the data deserves. The fix is to keep secrets out of captured output and to scrub or redact before anything is persisted or shared. A session-trace tool like Goldy is squarely in this risk category, which is why it caps and scans output before rendering.</p></div></details></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="With extraction safe and bounded, the final stage could be designed."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">With extraction safe and bounded, the final stage could be designed.</span></div>
     </div>
 
     <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:21">
@@ -975,7 +1012,7 @@ Usage:
       <div class="card">
         <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
-            <h3 class="node-title">Now the renderer - a standalone, dependency-free Notion-style HTML document with the node…</h3>
+            <h3 class="node-title">Render one self-contained HTML report</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:44:03</span></div>
           </div>
           <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
@@ -986,6 +1023,7 @@ Usage:
 <div class='mat-link mat-card'><a class='mat-open' href='https://css-tricks.com/almanac/properties/a/animation/' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 3l6 2.4L8 7.8 2 5.4z"/><path d="M4.3 6.7v3.1c0 1 1.7 1.9 3.7 1.9s3.7-.9 3.7-1.9V6.7"/></svg></span><span class='mat-body'><span class='mat-title'>Using CSS animations, step by step (CSS-Tricks)<span class='mat-kind mk-tut'>tutorial</span></span><span class='mat-host'>css-tricks.com</span><span class=mat-note><p>A practical tutorial for building the kind of keyframe effects the report uses.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="That design then had to become real code."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">That design then had to become real code.</span></div>
     </div>
 
     <div class="node collapsed k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:22">
@@ -1106,6 +1144,7 @@ Usage:
 <div class='mat-link mat-card'><a class='mat-open' href='https://www.notion.com/help/writing-and-editing-basics' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>Notion-style document design<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>notion.com</span><span class=mat-note><p>The clean-card, chip and toggle vocabulary the report&#x27;s visual language borrows from.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="Once written, the renderer had to be verified."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Once written, the renderer had to be verified.</span></div>
     </div>
 
     <div class="node collapsed k-test" data-kind="testing" data-prio="medium" data-rank="2" style="--i:23">
@@ -1125,6 +1164,7 @@ Usage:
 <div class='mat-link mat-card'><a class='mat-open' href='https://playwright.dev/python/docs/intro' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 3l6 2.4L8 7.8 2 5.4z"/><path d="M4.3 6.7v3.1c0 1 1.7 1.9 3.7 1.9s3.7-.9 3.7-1.9V6.7"/></svg></span><span class='mat-body'><span class='mat-title'>Playwright for Python<span class='mat-kind mk-tut'>tutorial</span></span><span class='mat-host'>playwright.dev</span><span class=mat-note><p>Driving a real browser to render, screenshot and assert on the UI.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge" data-transition="The way it was verified points to one last principle."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">The way it was verified points to one last principle.</span></div>
     </div>
 
     <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:24">
@@ -1142,6 +1182,7 @@ Usage:
 <div class='mat-link mat-card'><a class='mat-open' href='https://developer.mozilla.org/en-US/docs/Web/URI/Schemes/data' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6.7 9.3l2.6-2.6M7.2 5.1l1-1a2.6 2.6 0 013.7 3.7l-1 1M8.8 10.9l-1 1a2.6 2.6 0 01-3.7-3.7l1-1"/></svg></span><span class='mat-body'><span class='mat-title'>Data URLs and self-contained documents (MDN)</span><span class='mat-host'>developer.mozilla.org</span><span class=mat-note><p>Background on bundling assets inline so a file stands alone.</p></span></span></a></div></div></details>
         </div></div>
       </div>
+      <div class="bridge empty" data-transition=""><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text"></span></div>
     </div>
 </main>
 <footer>Generated by <b>Goldy</b>, keeping you in touch with your codebase.</footer>
@@ -1160,6 +1201,28 @@ document.querySelectorAll('.drawer.materials').forEach(d=>{
   var toggles=document.querySelectorAll('.h-toggle');
   var count=document.querySelector('.dc-count');
   var nodes=[].slice.call(graph.querySelectorAll('.node'));
+  function isVisible(n){return getComputedStyle(n).display!=='none';}
+  function bridgeText(n){var b=n.querySelector('.bridge');return b?b.getAttribute('data-transition'):'';}
+  // each visible node's bridge narrates the path to the next visible node: its own
+  // sentence plus the sentences of every discarded node in between, stitched up.
+  function updateBridges(){
+    for(var i=0;i<nodes.length;i++){
+      var br=nodes[i].querySelector('.bridge');
+      if(!br)continue;
+      if(!isVisible(nodes[i])){br.classList.add('empty');continue;}
+      var parts=[],own=bridgeText(nodes[i]);
+      if(own)parts.push(own);
+      var next=false;
+      for(var j=i+1;j<nodes.length;j++){
+        if(isVisible(nodes[j])){next=true;break;}
+        var t=bridgeText(nodes[j]);if(t)parts.push(t);
+      }
+      var span=br.querySelector('.br-text');
+      if(!next||!parts.length){br.classList.add('empty');if(span)span.textContent='';continue;}
+      if(span)span.textContent=parts.join(' ');
+      br.classList.remove('empty');
+    }
+  }
   function update(){
     var min=MINRANK[graph.getAttribute('data-detail')]||1;
     // each type chip shows how many of its kind survive the current level
@@ -1177,6 +1240,7 @@ document.querySelectorAll('.drawer.materials').forEach(d=>{
       nodes.forEach(function(n){if(getComputedStyle(n).display!=='none')vis++;});
       count.textContent='showing '+vis+' of '+nodes.length+' steps';
     }
+    updateBridges();
   }
   btns.forEach(function(b){
     b.addEventListener('click',function(){
