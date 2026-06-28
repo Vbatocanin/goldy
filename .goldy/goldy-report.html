@@ -156,7 +156,7 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
   border-color:#ded8cf}
 /* connector tick: stretches from the spine to the card, so it spans the staircase
    indent and visibly links each stepped-out card back to its bead */
-.node::after{content:"";position:absolute;left:-22px;top:18px;height:2px;
+.node::after{content:"";position:absolute;left:-22px;top:27px;height:2px;
   width:calc(18px + var(--indent,0px));background:var(--line);transition:background .2s,width .2s}
 .node:hover::after{background:var(--gold)}
 /* story bridge: the connective sentence that ties this step to the next. It sits
@@ -396,7 +396,7 @@ footer b{color:var(--gold)}
   <span class="eyebrow"><span class="dot"></span>Goldy walkthrough</span>
   <h1>Building Goldy</h1>
   <p class="intro">Goldy is a set of Claude Code skills and agents that turn a session into a readable report. This walkthrough traces how it was built, step by step, with the reasoning and sources behind each decision.</p>
-  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 21:28</span></div>
+  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 21:33</span></div>
   <div class='detail-ctl'><span class='dc-lead'>Detail level</span><div class='dc-seg' role='group' aria-label='Detail level'><button type='button' class='dc-btn' data-level='essentials' title='Only the key requests and decisions.'>Essentials</button><button type='button' class='dc-btn active' data-level='standard' title='Key steps plus the actions that carried them out.'>Standard</button><button type='button' class='dc-btn' data-level='everything' title='Every node, including minor and supporting steps.'>Everything</button></div><span class='dc-count'></span></div>
   <div class="filters">
     <span class="filters-lead">Filter by type</span>

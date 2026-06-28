@@ -1316,7 +1316,7 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
   border-color:#ded8cf}
 /* connector tick: stretches from the spine to the card, so it spans the staircase
    indent and visibly links each stepped-out card back to its bead */
-.node::after{content:"";position:absolute;left:-22px;top:18px;height:2px;
+.node::after{content:"";position:absolute;left:-22px;top:27px;height:2px;
   width:calc(18px + var(--indent,0px));background:var(--line);transition:background .2s,width .2s}
 .node:hover::after{background:var(--gold)}
 /* story bridge: the connective sentence that ties this step to the next. It sits
