@@ -43,6 +43,17 @@ def esc(s):
     return html.escape(nd(s))
 
 
+def short_title(s, limit=64):
+    """A node title shown on its bubble should be a short label, not a wall of
+    raw prompt text. Collapse whitespace and, if it is still too long, cut at a
+    word boundary with an ellipsis. Enrichment should set a concise title; this
+    is the safety net for titles that come straight from the transcript."""
+    s = re.sub(r"\s+", " ", nd(s or "").strip())
+    if len(s) <= limit:
+        return s
+    return s[:limit].rsplit(" ", 1)[0].rstrip(" ,;:-") + "…"
+
+
 # ---------------------------------------------------------------------------
 # tiny, safe markdown -> html (paragraphs, code, bold/italic, links, lists)
 # ---------------------------------------------------------------------------
@@ -89,6 +100,7 @@ KIND = {
     "testing":      {"label": "Testing",     "icon": "testing",     "cls": "k-test"},
     "networking":   {"label": "Networking",  "icon": "network",     "cls": "k-net"},
     "action":       {"label": "Action",      "icon": "action",      "cls": "k-action"},
+    "summary":      {"label": "Summary",     "icon": "recap",       "cls": "k-summary"},
 }
 
 TOOL_ICON = {
@@ -108,7 +120,7 @@ PRIORITY_RANK = {"high": 3, "medium": 2, "low": 1}
 # principles and the other teaching nodes sit below them at medium; routine
 # actions are low. A code-changing action (see below) is promoted to high.
 KIND_PRIORITY = {
-    "prompt": "high", "decision": "high", "security": "high",
+    "prompt": "high", "decision": "high", "security": "high", "summary": "high",
     "principle": "medium", "optimization": "medium", "testing": "medium",
     "networking": "medium", "action": "low",
 }
@@ -1048,16 +1060,28 @@ def node_html(n, idx):
         f"{icon('books', 'dw-ic')} {label} {badge}</summary>"
         f"<div class='mat-wrap'>{materials_html(mats)}</div></details>")
 
+    transition = esc(n.get("transition", ""))
+    brcls = "bridge" if n.get("transition") else "bridge empty"
+    bridge = (f'<div class="{brcls}" data-transition="{transition}">'
+              f'<span class="br-ic">{icon("chevron")}</span>'
+              f'<span class="br-text">{transition}</span></div>')
     return f"""
-    <div class="node {k['cls']}" data-kind="{n['kind']}" data-prio="{prio}" data-rank="{PRIORITY_RANK[prio]}" style="--i:{idx}">
+    <div class="node collapsed {k['cls']}" data-kind="{n['kind']}" data-prio="{prio}" data-rank="{PRIORITY_RANK[prio]}" style="--i:{idx}">
       <div class="spine-dot">{icon(k['icon'])}</div>
       <div class="card">
-        <div class="card-head">
-          <h3 class="node-title">{esc(n.get('title','Untitled step'))}</h3>
-          <div class="chips">{''.join(chips)}</div>
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico">{icon(k['icon'])}</span>
+          <div class="ch-text">
+            <h3 class="node-title">{esc(short_title(n.get('title','Untitled step')))}</h3>
+            <div class="chips">{''.join(chips)}</div>
+          </div>
+          <span class="node-caret">{icon('chevron')}</span>
         </div>
+        <div class="card-body"><div class="cb-inner">
         {''.join(body)}
+        </div></div>
       </div>
+      {bridge}
     </div>"""
 
 
@@ -1073,6 +1097,16 @@ def detail_control(active):
             "<span class='dc-lead'>Detail level</span>"
             f"<div class='dc-seg' role='group' aria-label='Detail level'>{''.join(btns)}</div>"
             "<span class='dc-count'></span></div>")
+
+
+def graph_tools():
+    """The fold controls: collapse or expand every node at once. Individual
+    nodes also fold by clicking their header."""
+    return ("<div class='graph-tools'>"
+            f"<button type='button' class='gt-btn' data-act='expand'>"
+            f"{icon('expand')}Expand all</button>"
+            f"<button type='button' class='gt-btn' data-act='collapse'>"
+            f"{icon('collapse')}Collapse all</button></div>")
 
 
 def render(data, detail=None):
@@ -1125,7 +1159,8 @@ def render(data, detail=None):
     return TEMPLATE.format(
         title=esc(meta.get("project", "Goldy") + " · Goldy report"),
         header_chips="".join(hc), headline=esc(headline), summary=esc(summary),
-        byline=byline, detail_control=detail_control(detail), detail=detail,
+        byline=byline, detail_control=detail_control(detail),
+        graph_tools=graph_tools(), detail=detail,
         nodes=body, css=CSS, js=JS)
 
 
@@ -1159,14 +1194,15 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .filters-lead{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;
   text-transform:uppercase;color:var(--muted);margin-bottom:9px}
 .head-chips{display:flex;flex-wrap:wrap;gap:8px}
-.how{margin-top:22px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;
-  background:linear-gradient(180deg,#fffdf7,#fbf9f3);display:flex;flex-wrap:wrap;
-  align-items:center;gap:6px 18px}
+.how{margin-top:22px;padding:14px 18px;border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(180deg,#fffdf7,#fbf9f3);display:flex;flex-direction:column;
+  align-items:flex-start;gap:9px}
 .how-lead{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--gold);margin-right:4px}
-.how-step{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted)}
+  color:var(--gold);margin-bottom:2px}
+.how-step{font-size:13px;color:var(--muted);line-height:1.65}
 .how-step b{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;
-  border-radius:50%;background:var(--gold-soft);color:#8a6d1f;font-size:11px;font-weight:700;flex:none}
+  border-radius:50%;background:var(--gold-soft);color:#8a6d1f;font-size:11px;font-weight:700;
+  margin-right:7px;vertical-align:-4px}
 .how-step em{font-style:normal;font-weight:600;color:var(--ink)}
 /* detail level control: a segmented switch that filters nodes by priority */
 .detail-ctl{margin-top:14px;display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px}
@@ -1181,6 +1217,15 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .dc-btn.active{background:var(--card);color:var(--ink);
   box-shadow:0 1px 2px rgba(40,36,28,.12);font-weight:700}
 .dc-count{font-size:12px;color:#a39d92;font-variant-numeric:tabular-nums}
+/* fold controls: collapse or expand every node at once */
+.graph-tools{display:flex;gap:8px;margin-top:14px}
+.gt-btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12.5px;
+  font-weight:600;color:var(--muted);background:#efece6;border:1px solid var(--line);
+  border-radius:999px;padding:5px 13px;cursor:pointer;transition:.15s}
+.gt-btn:hover{color:var(--ink);border-color:#ded8cf;background:#f3f0ea;transform:translateY(-1px)}
+.gt-btn:active{transform:translateY(0)}
+.gt-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gt-btn .ic{width:14px;height:14px;color:var(--gold)}
 /* filter 1: hide nodes whose rank is below the chosen detail level */
 .graph[data-detail="essentials"] .node:not([data-rank="3"]){display:none}
 .graph[data-detail="standard"] .node[data-rank="1"]{display:none}
@@ -1217,6 +1262,7 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-optim{background:#fff2dd;color:#9a6a16;border-color:#f3dcae}
 .k-test{background:#e6f4ec;color:#2f7d54;border-color:#c6e6d3}
 .k-net{background:#e2f1f8;color:#1f6f93;border-color:#c2e2ef}
+.k-summary{background:#efeae1;color:#5f574a;border-color:#ddd5c7}
 .c-tool{background:#f0eee9;color:#5b5650;font-family:ui-monospace,Menlo,monospace}
 .c-err{background:var(--red-soft);color:var(--red);border-color:#f0cbbb}
 .c-key{background:var(--gold-soft);color:#8a6d1f;border-color:#efe1bd;
@@ -1235,24 +1281,70 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .mat-kind .ic{display:none}
 
 .graph{position:relative;padding-left:34px}
-.graph::before{content:"";position:absolute;left:11px;top:6px;bottom:6px;width:2px;
-  background:linear-gradient(var(--violet),var(--gold) 30%,var(--teal) 60%,var(--blue))}
-.node{position:relative;margin:0 0 18px;opacity:0;transform:translateY(14px);
-  animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms)}
+/* spine: each node draws the segment from its own dot down to the next node's,
+   so the line starts at the first dot and stops at the last (no stub past either
+   end). It tracks live height, so collapse/expand keeps the segments connected.
+   Each segment takes its node's colour, turning the spine into a colour chain. */
+.node::before{content:"";position:absolute;left:-23px;top:var(--bead-y);width:2px;
+  height:calc(100% + var(--gap));background:var(--accent);z-index:0}
+.node:last-child::before{display:none}
+.node{position:relative;margin:0 0 var(--gap);opacity:0;transform:translateY(14px);
+  animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms);
+  --indent:0px;--bead-y:35px;--gap:42px;--accent:var(--gold);background:transparent}
+/* each kind's accent colour, used by the spine, the bead and the hover flow */
+.k-action{--accent:var(--blue)} .k-prompt{--accent:var(--violet)}
+.k-principle{--accent:var(--teal)} .k-security{--accent:#c0392b}
+.k-optim{--accent:#d99412} .k-test{--accent:#2f9d63} .k-net{--accent:#1f87b0}
+.k-summary{--accent:#6b6052}
 @keyframes rise{to{opacity:1;transform:none}}
-.spine-dot{position:absolute;left:-34px;top:16px;width:24px;height:24px;border-radius:50%;
-  display:grid;place-items:center;font-size:12px;color:#fff;background:var(--gold);
-  box-shadow:0 0 0 5px var(--bg),0 2px 6px rgba(0,0,0,.15);z-index:1}
+/* priority staircase: lower-priority nodes step further right off the spine, so
+   the key steps sit closest to the line and minor ones cascade outward */
+.node[data-rank="2"]{--indent:28px}
+.node[data-rank="1"]{--indent:56px}
+/* the spine bead is gone: the kind icon badge (.node-ico) is the only marker in
+   both states, so an open card shows one icon, not two. */
+.spine-dot{display:none}
 .k-action .spine-dot{background:var(--blue)} .k-prompt .spine-dot{background:var(--violet)}
 .k-principle .spine-dot{background:var(--teal)}
 .k-security .spine-dot{background:#c0392b} .k-optim .spine-dot{background:#d99412}
 .k-test .spine-dot{background:#2f9d63} .k-net .spine-dot{background:#1f87b0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:18px 20px;transition:transform .2s,box-shadow .2s,border-color .2s}
+  box-shadow:var(--shadow);padding:18px 20px;margin-left:var(--indent,0px);
+  transition:transform .25s,box-shadow .28s,border-color .28s,background-color .28s,padding .28s,border-radius .3s cubic-bezier(.2,.7,.3,1)}
 .card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(40,36,28,.08),0 18px 40px rgba(40,36,28,.08);
   border-color:#ded8cf}
-.node::after{content:"";position:absolute;left:-22px;top:18px;width:18px;height:2px;
-  background:var(--line)}
+/* connector tick: stretches from the spine to the card, so it spans the staircase
+   indent and visibly links each stepped-out card back to its bead */
+.node::after{content:"";position:absolute;left:-22px;top:calc(var(--bead-y) - 1px);height:2px;
+  width:calc(18px + var(--indent,0px));background:var(--line);
+  background-size:220% 100%;transition:width .2s,background-color .2s}
+/* on hover the connector lights up in the bubble's own colour and a brighter band
+   flows along it toward the bubble, so the link reads as live current */
+.node:hover::after{
+  background-image:linear-gradient(90deg,
+    color-mix(in srgb,var(--accent) 12%,transparent) 0%,
+    var(--accent) 45%,
+    color-mix(in srgb,#fff 65%,var(--accent)) 50%,
+    var(--accent) 55%,
+    color-mix(in srgb,var(--accent) 12%,transparent) 100%);
+  animation:flow 1s linear infinite}
+@keyframes flow{from{background-position:-120% 0}to{background-position:120% 0}}
+/* and the same live current runs down the bubble's own spine segment to the next */
+.node:hover::before{background-image:linear-gradient(180deg,
+    var(--accent) 0%,
+    color-mix(in srgb,#fff 65%,var(--accent)) 50%,
+    var(--accent) 100%);
+  background-size:100% 220%;animation:flowv 1.1s linear infinite}
+@keyframes flowv{from{background-position:0 -120%}to{background-position:0 120%}}
+/* story bridge: the connective sentence that ties this step to the next. It sits
+   in the gap below the card, along the spine. When detail or type filters discard
+   nodes, JS stitches their sentences together so the narrative stays unbroken. */
+.bridge{display:flex;align-items:flex-start;gap:7px;margin:11px 0 1px;padding-left:3px;
+  color:#94897c;font-size:12.5px;font-style:italic;line-height:1.5;max-width:60ch}
+.bridge.empty{display:none}
+.br-ic{flex:none;margin-top:1px;color:#c4bdb0;line-height:0}
+.br-ic .ic{width:13px;height:13px;transform:rotate(90deg)}
+.br-text{flex:1;min-width:0}
 .k-decision .card{border-left:3px solid var(--gold)}
 .k-action .card{border-left:3px solid var(--blue)}
 .k-prompt .card{border-left:3px solid var(--violet)}
@@ -1267,13 +1359,59 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-test .rat-tag{color:#2f9d63}
 .k-net .card{border-left:3px solid #1f87b0;background:linear-gradient(180deg,#f8fdff,#fff)}
 .k-net .node-title{color:#1a647f}
+.k-summary .card{border-left:3px solid #6b6052;background:linear-gradient(180deg,#fcfaf6,#fff)}
+.k-summary .node-title{color:#5a5246}
 .k-net .rationale{background:linear-gradient(#f2fafd,#e6f3f9);border-color:#c4e3ef}
 .k-net .rat-tag{color:#1f87b0}
 .k-security .rationale{background:linear-gradient(#fff6f5,#fdeceb);border-color:#f3cdc8}
 .k-security .rat-tag{color:#c0392b}
 .k-optim .rationale{background:linear-gradient(#fffaf0,#fff3df);border-color:#f0dcb0}
 .k-optim .rat-tag{color:#cf8c14}
-.card-head{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+/* the card header doubles as a collapse toggle for its node */
+.card-head{display:flex;align-items:flex-start;gap:12px;margin:-6px -8px 6px;padding:6px 8px;
+  border-radius:10px;cursor:pointer;user-select:none;transition:background .15s}
+.card-head:hover{background:rgba(202,162,74,.08)}
+.card-head:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+/* the kind icon, rendered as a round badge. It is small in the open card and
+   swells into the big bubble face when the node collapses, morphing on one
+   element so the open/closed states read as the same object resizing. */
+.node-ico{flex:none;align-self:flex-start;display:grid;place-items:center;
+  position:relative;z-index:2;       /* the face sits in front of the spine lines */
+  width:34px;height:34px;border-radius:50%;color:#fff;background:var(--accent);
+  box-shadow:0 2px 6px rgba(40,36,28,.16);
+  transition:width .32s cubic-bezier(.2,.7,.3,1),height .32s cubic-bezier(.2,.7,.3,1),
+    box-shadow .28s,transform .24s cubic-bezier(.2,.7,.3,1)}
+.node-ico .ic{width:18px;height:18px;transition:width .32s cubic-bezier(.2,.7,.3,1),
+  height .32s cubic-bezier(.2,.7,.3,1)}
+.ch-text{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.node-caret{flex:none;margin-top:3px;color:#c4bdb0;line-height:0;
+  transition:transform .25s cubic-bezier(.2,.7,.3,1),color .15s}
+.node-caret .ic{width:15px;height:15px}
+.card-head:hover .node-caret{color:var(--gold)}
+.card-head[aria-expanded="true"] .node-caret{transform:rotate(90deg)}
+/* collapsible body: smooth height via the grid-template-rows 1fr/0fr trick */
+.card-body{display:grid;grid-template-rows:1fr;
+  transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1),opacity .22s ease}
+.cb-inner{overflow:hidden;min-height:0}
+.node.collapsed .card-body{grid-template-rows:0fr;opacity:0}
+/* collapsed node = a graph bubble: the kind icon swells into a big round face
+   with the title beside it, the card chrome (border, fill, padding, body) all
+   melting away. Clicking shrinks the face back to a badge and the full card
+   grows around it, so open and closed read as one object resizing. */
+.node.collapsed{--bead-y:39px}                   /* spine meets the big face centre */
+.node.collapsed .card{background:transparent;border:none;box-shadow:none;
+  padding:4px 0;border-radius:0}
+.node.collapsed .card:hover{transform:none}
+.node.collapsed .card-head{margin:0;padding:6px 4px;gap:16px;align-items:center}
+.node.collapsed .card-head:hover{background:transparent}
+.node.collapsed .node-ico{width:58px;height:58px;box-shadow:0 5px 16px rgba(40,36,28,.20)}
+.node.collapsed .node-ico .ic{width:27px;height:27px}
+.node.collapsed:hover .node-ico{transform:scale(1.07);box-shadow:0 8px 22px rgba(40,36,28,.26)}
+.node.collapsed .chips{display:none}
+.node.collapsed .node-caret{display:none}
+.node.collapsed .node-title{font-size:15.5px}
+/* the spine connector reaches into the big face when collapsed */
+.node.collapsed::after{width:calc(34px + var(--indent,0px))}
 .node-title{font-size:16px;margin:0;font-weight:700;letter-spacing:-.01em}
 .k-principle .node-title{color:#1f6b61}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -1435,6 +1573,12 @@ a.mat-link:hover{border-color:var(--gold);background:var(--gold-soft);transform:
 .mat-empty{font-size:13px;color:#a39d92;font-style:italic;padding:4px 0}
 footer{margin-top:60px;text-align:center;color:#b6b0a4;font-size:12.5px}
 footer b{color:var(--gold)}
+/* respect a reader who prefers less motion: keep state changes, drop the animation */
+@media (prefers-reduced-motion:reduce){
+  .node{animation:none;opacity:1;transform:none}
+  .card,.card-body,.spine-dot,.node::after,.node::before,.node-caret,.node-ico,
+  .node-ico .ic,.gt-btn,.drawer .code,.drawer .cmd,.drawer .mat-wrap{transition:none;animation:none}
+}
 """
 
 JS = r"""
@@ -1452,6 +1596,28 @@ document.querySelectorAll('.drawer.materials').forEach(d=>{
   var toggles=document.querySelectorAll('.h-toggle');
   var count=document.querySelector('.dc-count');
   var nodes=[].slice.call(graph.querySelectorAll('.node'));
+  function isVisible(n){return getComputedStyle(n).display!=='none';}
+  function bridgeText(n){var b=n.querySelector('.bridge');return b?b.getAttribute('data-transition'):'';}
+  // each visible node's bridge narrates the path to the next visible node: its own
+  // sentence plus the sentences of every discarded node in between, stitched up.
+  function updateBridges(){
+    for(var i=0;i<nodes.length;i++){
+      var br=nodes[i].querySelector('.bridge');
+      if(!br)continue;
+      if(!isVisible(nodes[i])){br.classList.add('empty');continue;}
+      var parts=[],own=bridgeText(nodes[i]);
+      if(own)parts.push(own);
+      var next=false;
+      for(var j=i+1;j<nodes.length;j++){
+        if(isVisible(nodes[j])){next=true;break;}
+        var t=bridgeText(nodes[j]);if(t)parts.push(t);
+      }
+      var span=br.querySelector('.br-text');
+      if(!next||!parts.length){br.classList.add('empty');if(span)span.textContent='';continue;}
+      if(span)span.textContent=parts.join(' ');
+      br.classList.remove('empty');
+    }
+  }
   function update(){
     var min=MINRANK[graph.getAttribute('data-detail')]||1;
     // each type chip shows how many of its kind survive the current level
@@ -1469,6 +1635,7 @@ document.querySelectorAll('.drawer.materials').forEach(d=>{
       nodes.forEach(function(n){if(getComputedStyle(n).display!=='none')vis++;});
       count.textContent='showing '+vis+' of '+nodes.length+' steps';
     }
+    updateBridges();
   }
   btns.forEach(function(b){
     b.addEventListener('click',function(){
@@ -1488,6 +1655,29 @@ document.querySelectorAll('.drawer.materials').forEach(d=>{
   });
   update();
 })();
+
+// Per-node fold: a card header is a toggle; the fold-all buttons drive them all.
+(function(){
+  function setNode(node,collapsed){
+    node.classList.toggle('collapsed',collapsed);
+    var h=node.querySelector('.card-head');
+    if(h)h.setAttribute('aria-expanded',collapsed?'false':'true');
+  }
+  document.querySelectorAll('.card-head').forEach(function(h){
+    var node=h.closest('.node');
+    function toggle(){setNode(node,!node.classList.contains('collapsed'));}
+    h.addEventListener('click',toggle);
+    h.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}
+    });
+  });
+  document.querySelectorAll('.gt-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      var collapse=b.dataset.act==='collapse';
+      document.querySelectorAll('.node').forEach(function(n){setNode(n,collapse);});
+    });
+  });
+})();
 """
 
 TEMPLATE = """<!doctype html>
@@ -1506,11 +1696,12 @@ TEMPLATE = """<!doctype html>
     <span class="filters-lead">Filter by type</span>
     <div class="head-chips">{header_chips}</div>
   </div>
+  {graph_tools}
   <div class="how">
     <span class="how-lead">How to read this</span>
     <span class="how-step"><b>1</b> Scroll the cards top to bottom: each is one step Claude took.</span>
-    <span class="how-step"><b>2</b> Open <em>What ran</em> to see the exact command or code, with hover hints.</span>
-    <span class="how-step"><b>3</b> Open <em>Learn more</em> for the reasoning and curated sources.</span>
+    <span class="how-step"><b>2</b> Cards start folded: click a card's <em>header</em> to open it, or use <em>Expand all</em>.</span>
+    <span class="how-step"><b>3</b> Open <em>What ran</em> and <em>Learn more</em> for the command, reasoning and sources.</span>
     <span class="how-step"><b>4</b> Set the <em>detail level</em> to hide minor steps, or click a <em>type chip</em> above to hide that kind.</span>
   </div>
 </header>

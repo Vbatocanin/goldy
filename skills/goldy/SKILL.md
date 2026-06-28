@@ -132,6 +132,18 @@ Now edit `.goldy/nodes.json`, applying what you learned. Keep the `meta` block.
 
 For each node add:
 
+- **`title`**: a short, summarized label (aim for under ~8 words), not a sentence
+  of raw transcript text. It is what shows on the node's collapsed bubble, so a
+  decision like "I'll start by understanding the current state of the goldy
+  directory and how..." becomes "Survey the project's starting point". The
+  renderer truncates over-long titles as a fallback, but write a real label.
+- **`transition`**: a single connective sentence that bridges this node to the
+  next step, so the bubbles read as a story top to bottom ("That meant inspecting
+  the project and where Claude Code keeps its skills."). Write one per node in
+  document order; the last node needs none. When the detail-level or type filters
+  discard nodes, the renderer stitches the discarded nodes' transitions together
+  into the surviving gap, so keep each sentence able to stand on its own and flow
+  into the next.
 - **`rationale`**: a tight 1 to 3 sentence "why". Not what happened (the node
   shows that) but why it was the right call given the alternatives. For an action
   that produces or changes something, open with the preparation: what was learned
@@ -188,6 +200,13 @@ never invented:
   web-API design and versioning, DNS, TLS/HTTPS, ports and protocols. Link MDN
   HTTP, the URL standard, and the relevant networking references.
 
+- **`summary`**: a single closing node, appended last, that recaps the whole
+  walkthrough. Pull the through-line of the session into a short lead plus a few
+  bulleted takeaways (the key decisions and principles, in the reader's words),
+  and a one-line `rationale`. It is `priority: high` so it always shows, and its
+  bubble carries a distinct neutral accent so the finale reads as a capstone, not
+  another step. Add exactly one.
+
 Each teaching node has the same shape as a decision (`title`, `summary`,
 `rationale`, `materials`, optional `alternatives`) with its own `kind`.
 
@@ -207,6 +226,31 @@ block in `nodes.json` (`"essentials"`, `"standard"` or `"everything"`) or with
 `--detail <level>` on the render command; the flag wins. Default is `standard`.
 Honor the profile here: a low-`depth` or executive `audience` profile suggests
 opening at `essentials`; a teaching-heavy one at `everything`.
+
+**Interactive graph.** The graph opens as a folded overview of bubbles: every node
+starts collapsed to a big round, kind-coloured icon face with its title beside it,
+the card chrome (border, fill, padding, body) melted away. Clicking a bubble morphs
+it into the full card: the icon face shrinks from a 58px bubble to a small header
+badge while the card grows around it and the body unfolds, all on one element so
+open and closed read as the same object resizing. Bubbles are keyboard-focusable,
+so Enter or Space toggles them too. The icon face is the only marker (there is no
+separate spine bead), and it sits in front of the spine, so the lines tuck behind
+it. Two fold controls, Expand all and Collapse all, drive the whole graph at once.
+The spine is drawn per node, so the connecting line begins at the first face and
+ends at the last, with no stub past either end. Hovering a bubble lights its
+connector and spine segment in the bubble's own colour, with a brighter band
+flowing along them toward the next node, so the link reads as live current.
+
+**Priority staircase and story.** Bubbles step right by priority: high-priority
+nodes sit closest to the spine and lower-priority ones cascade outward, so the
+shape of the graph shows the hierarchy at a glance. Between every two bubbles, the
+node's `transition` sentence is shown as connective narration, turning the graph
+into a walkthrough you can read top to bottom. If a reader filters nodes out (by
+detail level or type), the discarded nodes' transitions are stitched into the gap
+so the story never breaks. Hovering a card lifts
+it, grows its spine dot and lights its connector. All of this is self-contained
+CSS and JS with a `prefers-reduced-motion` fallback, so the document stays a
+single file with no dependencies.
 
 The renderer also annotates code for free: shell tokens (commands, subcommands,
 flags, paths, operators), command output (paths, permissions, exit codes,
