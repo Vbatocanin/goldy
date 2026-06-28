@@ -1,6 +1,6 @@
 ---
 name: goldy
-description: Export the current Claude Code session into a human-readable, Notion-style HTML report. Works in five explicit phases (ingest the full history, take inventory, research, enrich, then render) and produces a graph of request, decision, principle, security, performance and action nodes, each with the rationale behind it and a "Learn more" drawer linking the references, tutorials and summaries needed to understand it. Use when the user asks to "explain what you did", "show your work", "document this session", "generate a Goldy report", or invokes /goldy.
+description: Export the current Claude Code session into a human-readable, Notion-style HTML report. Works in five explicit phases (ingest the full history, take inventory, research, enrich, then render) and produces an interactive graph of request, decision, principle, security, performance, testing, networking and action nodes plus a closing summary, each rendered as a collapsible bubble with the rationale behind it and a "Learn more" drawer linking the references, tutorials and summaries needed to understand it. Use when the user asks to "explain what you did", "show your work", "document this session", "generate a Goldy report", or invokes /goldy.
 ---
 
 # Goldy: make your codebase changes legible
@@ -130,6 +130,14 @@ Only when the knowledge base is built do you proceed.
 
 Now edit `.goldy/nodes.json`, applying what you learned. Keep the `meta` block.
 
+**Tone: precise and professional.** Write every explanation (titles, transitions,
+rationale, summaries) as a senior engineer would in a design doc: concrete and
+specific, naming the actual file, command, type or trade-off involved. State things
+plainly and in the present or simple past. No vague filler ("we did some setup"),
+no hedging, no chatty asides or hype, no exclamation. Prefer the exact noun over a
+gesture at it ("indexed tool_result blocks by id for O(1) pairing", not "handled the
+results nicely").
+
 For each node add:
 
 - **`title`**: a short, summarized label (aim for under ~8 words), not a sentence
@@ -174,6 +182,14 @@ For each node add:
   bare name or the dotted path:
   `{"my_helper": {"tip": "...", "url": "..."}, "obj.method": {"tip": "..."}}`.
 
+  **Denote what a script does.** When a step runs a script, by an interpreter
+  (`python3 deploy.py`, `node seed.js`) or directly (`./run.sh`, `zsh build.zsh`),
+  the renderer already flags the script filename as a script. Add a `detail_tips`
+  override keyed by that filename (for example `"deploy.py"` or `"./run.sh"`) whose
+  `tip` states, in one or two precise sentences, what the script actually does
+  (its inputs, its effect), reading the file if it is in the repo. Do not leave a
+  run-script step explained only as a generic argument.
+
   **Fetch the docs for notable functions.** The renderer already explains common
   language keywords, builtins, modules and module members (for example
   `os.path.expanduser`, `json.loads`). When the code calls a function, method or
@@ -212,11 +228,27 @@ Each teaching node has the same shape as a decision (`title`, `summary`,
 
 ### Phase 5: Render the HTML (only now)
 
-Only after Phases 1 to 4 are complete, write the document:
+Only after Phases 1 to 4 are complete, write the document. A repo accumulates many
+conversations, so each one gets its **own report** under `.goldy/reports/`, and a
+**master index** at `.goldy/goldy-report.html` links to all of them. Render this
+session's report (registering it in the history manifest), then rebuild the index:
 
 ```bash
-python3 "$SKILL_DIR/scripts/render.py" .goldy/nodes.json -o .goldy/goldy-report.html
+python3 "$SKILL_DIR/scripts/render.py" .goldy/nodes.json \
+  -o .goldy/reports/<id>.html --register
+python3 "$SKILL_DIR/scripts/render_index.py" .goldy/reports \
+  -o .goldy/goldy-report.html
 ```
+
+Use the session id for `<id>` (the renderer defaults to `meta.session_id`, or a
+slug of the title, when `--register` is given without `--id`), so re-rendering the
+same conversation overwrites its report rather than adding a duplicate. `--register`
+upserts a small entry (title, summary, date, kind counts) into
+`.goldy/reports/index.json`; `render_index.py` turns that manifest into the master
+page, newest first. Each report shows an up-arrow back to the index (the parent
+doc): with `--register` the link defaults to `../goldy-report.html`, or set it
+explicitly with `--parent <href>`. Offer to open `.goldy/goldy-report.html` (the
+hub) when done.
 
 **Detail level.** The report opens with a Detail control (Essentials, Standard,
 Everything) the reader can flip live to filter nodes by their `priority`:

@@ -17,6 +17,8 @@ d["meta"]["summary"] = (
     "with the reasoning and sources behind each decision.")
 # Open the report at the middle detail level by default.
 d["meta"]["detail"] = "standard"
+# When this session happened (drives the history index date and ordering).
+d["meta"]["generated"] = "2026-06-26T15:42:00"
 
 # Per-node priority drives the detail-level filter (high survives "Essentials",
 # medium needs "Standard", low only shows at "Everything"). Code-changing steps
@@ -85,13 +87,13 @@ E = {
             materials=[{"title": "Python json, encoder and decoder", "kind": "language", "url": "https://docs.python.org/3/library/json.html", "note": "The standard-library module that makes line-by-line JSONL parsing a few lines of code."},
                        {"title": "Learn Python with Hands-on Labs (LabEx)", "kind": "tutorial", "url": "https://labex.io/learn/python", "note": "Hands-on Python: syntax, data structures, OOP, file IO.", "summary": "A structured, interactive Python roadmap covering syntax, data structures and object-oriented programming in a real browser environment. The preferred place to practice the Python this parser is written in."},
                        {"title": "Working with JSON Data in Python (Real Python)", "kind": "tutorial", "url": "https://realpython.com/python-json/", "note": "A hands-on walkthrough of reading and writing JSON in Python, the exact task the parser does."}]),
- "n12": dict(rationale="With the JSONL schema already confirmed by hand (the learning step just before), the parser could be written directly against the real shape. It is intentionally dumb: it extracts raw facts and leaves rationale and materials empty, so extraction stays separate from interpretation and each piece is independently testable.",
+ "n12": dict(rationale="With the JSONL schema already confirmed by hand (the learning step just before), the parser could be written directly against the real shape. It is intentionally minimal: it extracts raw facts and leaves rationale and materials empty, so extraction stays separate from interpretation and each piece is independently testable.",
             materials=[{"title": "Python: dictionaries", "kind": "language", "url": "https://docs.python.org/3/tutorial/datastructures.html#dictionaries", "note": "The dict used to index tool results by id for O(1) pairing with their tool calls."},
                        {"title": "Working with JSON Data in Python (Real Python)", "kind": "tutorial", "url": "https://realpython.com/python-json/", "note": "A hands-on guide to the json parsing the script does line by line."},
                        {"title": "Separation of concerns", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Separation_of_concerns", "note": "Why parsing, enrichment and rendering are three swappable stages rather than one script."}]),
- "n13": dict(rationale="The renderer emits a single self-contained HTML file (inline CSS and JS, no network). That makes a report portable, emailable, committable, viewable offline, and the Notion-like styling (spine graph, chips, drawers, scroll-in animation) is pure CSS so it never breaks.",
+ "n13": dict(rationale="The renderer emits a single self-contained HTML file (inline CSS and JS, no network). That makes a report portable, emailable, committable, viewable offline, the Notion-like styling (spine graph, chips, drawers, scroll-in animation) is plain CSS, and the only scripting is a small dependency-free layer for the collapsible graph and filters, so a report renders consistently across browsers.",
             alternatives=[
-                {"option": "Static-site generator", "tradeoff": "Tools like Eleventy give nice output, but add a build step and dependencies to install and keep current.", "url": "https://www.11ty.dev/"},
+                {"option": "Static-site generator", "tradeoff": "Tools like Eleventy produce polished output, but add a build step and dependencies to install and keep current.", "url": "https://www.11ty.dev/"},
                 {"option": "Render to PDF", "tradeoff": "Very portable, but static: no hover tips and no drawers, so the interactive learning parts are lost."},
                 {"option": "React single-page app", "tradeoff": "Rich and componentized, but needs bundling and a server, and will rot as its dependencies age."}],
             materials=[{"title": "HTML details and summary disclosure element", "kind": "language", "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details", "note": "The native, JS-free primitive powering Goldy's Learn more and code drawers."},
@@ -109,7 +111,7 @@ PRINCIPLES = [
  ("after", "n4", dict(id="p1", kind="principle",
    title="Progressive disclosure: load only what is needed, when needed",
    summary="A skill exposes just its name and description up front; the full instructions and scripts load only when it is actually used.",
-   rationale="Goldy follows the same idea internally. The report shows a one-line title and chips first, and tucks the command, result and references into drawers. The reader controls depth instead of drowning in everything at once.",
+   rationale="Goldy follows the same idea internally. The report shows a one-line title and chips first, and tucks the command, result and references into drawers. The reader controls how much detail to reveal instead of being shown everything at once.",
    materials=[{"title": "Progressive Disclosure (Nielsen Norman Group)", "url": "https://www.nngroup.com/articles/progressive-disclosure/", "note": "The interaction-design principle the drawers and the skill's metadata-first loading both apply."}, SKILLS_ENG])),
  ("after", "n9", dict(id="p5", kind="principle",
    title="Preparation phase: learn first, then write",
@@ -146,22 +148,22 @@ SECURITY = [
               {"title": "CWE-532: Insertion of Sensitive Information into Log File", "kind": "reference", "url": "https://cwe.mitre.org/data/definitions/532.html", "note": "The exact weakness a trace tool risks: leaking secrets through captured output.", "summary": "CWE-532 is the weakness where an application writes sensitive data (credentials, tokens, personal data) into logs or trace files that are less protected than the data deserves. The fix is to keep secrets out of captured output and to scrub or redact before anything is persisted or shared. A session-trace tool like Goldy is squarely in this risk category, which is why it caps and scans output before rendering."}])),
  ("after", "n10", dict(id="s2", kind="security",
    title="Least privilege and symlink safety in the installer",
-   summary="Transcripts live in a private ~/.claude (mode 0700), and the installer refuses to clobber a real file when linking.",
-   rationale="The install step only creates symlinks and bails out if the target exists and is not already a link, which avoids overwriting user data and the classic symlink-swap attack. Goldy reads the private transcript directory but never widens its permissions.",
-   materials=[{"title": "CWE-59: Link Following", "kind": "reference", "url": "https://cwe.mitre.org/data/definitions/59.html", "note": "Why an installer must be careful about following or replacing symlinks."},
-              {"title": "Principle of least privilege", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Principle_of_least_privilege", "note": "The access-control idea behind keeping the transcript directory private."}])),
+   summary="The installer only creates symlinks, and never overwrites a real file. Its link() helper skips any destination that already exists and is not a symlink, printing a warning instead of replacing it; otherwise it runs `ln -sfn`, which replaces an existing link in place rather than dereferencing it into a directory.",
+   rationale="Skipping an existing non-symlink preserves whatever file the user already has at that path, and the -n (no-dereference) flag prevents writing through a symlink into an unintended directory. The installer's footprint is small by design: it creates only ~/.claude/skills and ~/.claude/agents, symlinks the skills and agent, and adds one SessionStart hook entry to settings.json. Goldy reads the session transcripts under ~/.claude read-only and changes no file permissions.",
+   materials=[{"title": "CWE-59: Improper Link Resolution Before File Access (Link Following)", "kind": "reference", "url": "https://cwe.mitre.org/data/definitions/59.html", "note": "Why an installer must guard against replacing or following a symlink at a write target."},
+              {"title": "Principle of least privilege", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Principle_of_least_privilege", "note": "The access-control principle behind the installer's minimal, symlink-only footprint."}])),
 ]
 
 OPTIM = [
  ("after", "n11", dict(id="o1", kind="optimization",
-   title="Stream the transcript line by line, not all at once",
-   summary="The parser reads the JSONL file one line per iteration instead of loading and parsing the whole session into memory.",
-   rationale="A long session can be large. Iterating the file object yields one line at a time, so memory stays roughly constant and the work is a single O(n) pass. Tool results are indexed once into a dict for O(1) pairing with their tool calls.",
-   materials=[{"title": "Reading files lazily in Python", "kind": "tutorial", "url": "https://realpython.com/python-iterators-iterables/", "note": "Why iterating a file object streams it rather than buffering the whole thing.", "summary": "Iterators produce values one at a time and only when asked, so they let you process data that is large or even unbounded without holding it all in memory. A Python file object is itself an iterator over lines, so looping directly over it reads one line per step. That is exactly how the parser walks a transcript without loading the whole session."},
-              {"title": "Time complexity (Big O)", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Time_complexity", "note": "Framing the single-pass parse and the O(1) dict lookups.", "summary": "Big O describes how an algorithm's running time grows with input size. A single pass over n lines is O(n), and a hash-map (dict) lookup is on average O(1) regardless of size. Indexing tool results into a dict once and then pairing them by id keeps the parser linear instead of quadratic."}],
+   title="Linear parsing with O(1) result pairing",
+   summary="The parser decodes the JSONL transcript one line at a time, skipping any malformed line, then makes two linear passes over the decoded events: one to index every tool_result by its id, one to emit nodes. Each tool_use is matched to its result through that index.",
+   rationale="A tool_use and its tool_result appear in separate turns, so a hash index of results by id makes pairing an average O(1) lookup instead of an O(n^2) scan, keeping the whole parse linear in the number of events. Decoding per line, inside a try/except, means one corrupt line is skipped rather than failing the entire parse. The decoded events are held in memory (O(n)), which is small for a session transcript.",
+   materials=[{"title": "Hash tables (average O(1) lookup)", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Hash_table", "note": "Why indexing tool_result blocks by id makes pairing them with tool_use blocks average O(1).", "summary": "A hash table maps keys to values with average constant-time insertion and lookup, by hashing the key to a bucket. Python's dict is a hash table, so building a dict of tool_result blocks keyed by tool_use_id and then looking each one up while emitting nodes is average O(1) per pair. That turns what would be a quadratic nested scan into a linear pass."},
+              {"title": "Time complexity (Big O)", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Time_complexity", "note": "Framing the linear passes and the O(1) dict lookups.", "summary": "Big O describes how an algorithm's running time grows with input size. Two passes over n events is still O(n), and a dict lookup is on average O(1) regardless of size. Indexing tool results once and pairing them by id keeps the parser linear rather than quadratic."}],
    alternatives=[
-       {"option": "json.load the whole file", "tradeoff": "Simplest to write, but JSONL is not one JSON document, and it would hold the entire session in memory at once."},
-       {"option": "Read all lines into a list first", "tradeoff": "Convenient random access, but defeats the streaming win on large transcripts."}])),
+       {"option": "json.load the whole file", "tradeoff": "Simplest to write, but JSONL is not a single JSON document, so it would not parse; it would also force the entire session into one structure with no per-line error tolerance."},
+       {"option": "Pair in a single pass with a pending map", "tradeoff": "Buffer each tool_use until its result arrives. It saves one pass, but because results live in later turns it needs its own bookkeeping map, so it trades a second linear pass for added state with no change in O(n)."}])),
  ("after", "n12", dict(id="o2", kind="optimization",
    title="Cap captured output to bound size and cost",
    summary="Each result excerpt and command body is truncated to a fixed budget before it ever reaches nodes.json.",

@@ -55,6 +55,27 @@ def clip(s, n):
     return s if len(s) <= n else s[:n] + f"\n…[truncated {len(s) - n} chars]"
 
 
+# Goldy's own pipeline scripts and output dir. A session that runs Goldy records
+# the report-generation tool calls in its own transcript, so by default we drop
+# them: a Goldy report should not document the act of generating a Goldy report.
+GOLDY_SCRIPTS = ("parse_transcript.py", "render.py", "render_index.py",
+                 "enrich.py", "history.py")
+
+
+def is_goldy_meta(name, inp):
+    """True when a tool_use is Goldy's own machinery (running a pipeline script, or
+    reading/writing the .goldy output dir), so it can be filtered from the export.
+    Editing the goldy *source* (skills/goldy/...) is real work and is not filtered."""
+    inp = inp or {}
+    if name == "Bash":
+        cmd = inp.get("command", "") or ""
+        return any(s in cmd for s in GOLDY_SCRIPTS) or ".goldy/" in cmd
+    if name in ("Write", "Edit", "Read"):
+        p = (inp.get("file_path", "") or "").replace("\\", "/")
+        return p.startswith(".goldy/") or "/.goldy/" in p
+    return False
+
+
 def describe_tool(name, inp):
     """Produce (title, detail) for an action node from a tool_use block."""
     inp = inp or {}
@@ -93,7 +114,7 @@ def result_text(result):
     return ""
 
 
-def parse(path):
+def parse(path, drop_self=True):
     rows = []
     with open(path) as fh:
         for line in fh:
@@ -166,6 +187,11 @@ def parse(path):
                     if t:
                         reason.append(t)
                 elif bt == "tool_use":
+                    # skip Goldy's own report-generation machinery; leave any
+                    # preceding reasoning buffered so it merges with the next real
+                    # action rather than becoming an orphan node.
+                    if drop_self and is_goldy_meta(b.get("name"), b.get("input")):
+                        continue
                     if reason:
                         body = "\n\n".join(reason)
                         add("decision", title=first_line(body),
@@ -194,10 +220,13 @@ def main():
     ap.add_argument("--latest", action="store_true",
                     help="use the newest transcript for the current project")
     ap.add_argument("-o", "--out", default="-")
+    ap.add_argument("--include-self", action="store_true",
+                    help="keep Goldy's own report-generation steps (parse/render/"
+                         "enrich calls and .goldy writes); they are dropped by default")
     args = ap.parse_args()
 
     path = find_latest_transcript() if (args.latest or not args.transcript) else args.transcript
-    data = parse(path)
+    data = parse(path, drop_self=not args.include_self)
     data["meta"]["counts"] = {
         "total": len(data["nodes"]),
         "decision": sum(n["kind"] == "decision" for n in data["nodes"]),

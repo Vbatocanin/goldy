@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>goldy · Goldy report</title>
+<style>
+:root{
+  --bg:#f7f6f3; --card:#ffffff; --ink:#2c2a26; --muted:#7a756c; --line:#e8e4dd;
+  --gold:#eaa81f; --gold-soft:#fdedc4; --blue:#2f7fe6; --blue-soft:#e0eeff;
+  --violet:#8b46ec; --violet-soft:#efe2ff; --teal:#08b6a4; --teal-soft:#ccf6ee;
+  --red:#ef4b3c; --red-soft:#ffe2dc;
+  --radius:14px; --shadow:0 1px 2px rgba(40,36,28,.06),0 8px 24px rgba(40,36,28,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(120% 80% at 50% -10%,#fffdf7,var(--bg));
+  color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;}
+.wrap{max-width:820px;margin:0 auto;padding:56px 24px 120px}
+header{margin-bottom:40px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-weight:700;
+  letter-spacing:.14em;font-size:12px;color:var(--gold);text-transform:uppercase}
+.eyebrow .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 4px var(--gold-soft)}
+.eyebrow .goldy-mark{width:18px;height:18px}.eyebrow .goldy-mark .ic{width:18px;height:18px}
+/* up-arrow back to the master index (the parent doc), inline with the eyebrow */
+.top-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.parent-link{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:var(--card);
+  color:var(--gold);text-decoration:none;box-shadow:var(--shadow);
+  transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .2s,border-color .2s}
+.parent-link:hover{transform:translateY(-2px);border-color:#e3d8bf;box-shadow:0 5px 14px rgba(40,36,28,.12)}
+.parent-link .ic{width:16px;height:16px}
+h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spacing:-.02em;
+  max-width:24ch}
+.intro{color:var(--muted);font-size:15.5px;max-width:62ch;line-height:1.55}
+/* muted context byline: project and generated time, kept out of the chip row */
+.byline{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;color:#a39d92;
+  font-size:12.5px}
+.byline .by-item{display:inline-flex;align-items:center;gap:6px}
+.byline .ic{width:14px;height:14px;color:#b6b0a4}
+/* type-filter row: a small lead label, then the clickable kind chips */
+.filters{margin-top:18px}
+.filters-lead{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.head-chips{display:flex;flex-wrap:wrap;gap:8px}
+.how{margin-top:22px;padding:14px 18px;border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(180deg,#fffdf7,#fbf9f3);display:flex;flex-direction:column;
+  align-items:flex-start;gap:9px}
+.how-lead{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:2px}
+.how-step{font-size:13px;color:var(--muted);line-height:1.65}
+.how-step b{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;
+  border-radius:50%;background:var(--gold-soft);color:#8a6d1f;font-size:11px;font-weight:700;
+  margin-right:7px;vertical-align:-4px}
+.how-step em{font-style:normal;font-weight:600;color:var(--ink)}
+/* detail level control: a segmented switch that filters nodes by priority */
+.detail-ctl{margin-top:14px;display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px}
+.dc-lead{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted)}
+.dc-seg{display:inline-flex;background:#efece6;border:1px solid var(--line);border-radius:999px;
+  padding:3px}
+.dc-btn{appearance:none;border:none;background:transparent;cursor:pointer;font:inherit;
+  font-size:12.5px;font-weight:600;color:var(--muted);padding:5px 14px;border-radius:999px;
+  transition:.15s}
+.dc-btn:hover{color:var(--ink)}
+.dc-btn.active{background:var(--card);color:var(--ink);
+  box-shadow:0 1px 2px rgba(40,36,28,.12);font-weight:700}
+.dc-count{font-size:12px;color:#a39d92;font-variant-numeric:tabular-nums}
+/* fold controls: collapse or expand every node at once */
+.graph-tools{display:flex;gap:8px;margin-top:14px}
+.gt-btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12.5px;
+  font-weight:600;color:var(--muted);background:#efece6;border:1px solid var(--line);
+  border-radius:999px;padding:5px 13px;cursor:pointer;transition:.15s}
+.gt-btn:hover{color:var(--ink);border-color:#ded8cf;background:#f3f0ea;transform:translateY(-1px)}
+.gt-btn:active{transform:translateY(0)}
+.gt-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gt-btn .ic{width:14px;height:14px;color:var(--gold)}
+/* filter 1: hide nodes whose rank is below the chosen detail level */
+.graph[data-detail="essentials"] .node:not([data-rank="3"]){display:none}
+.graph[data-detail="standard"] .node[data-rank="1"]{display:none}
+/* filter 2: hide a node kind toggled off via its header chip (composes with the
+   detail filter; either rule hiding a node wins) */
+.graph.hide-prompt .node[data-kind="prompt"],
+.graph.hide-decision .node[data-kind="decision"],
+.graph.hide-principle .node[data-kind="principle"],
+.graph.hide-security .node[data-kind="security"],
+.graph.hide-optimization .node[data-kind="optimization"],
+.graph.hide-testing .node[data-kind="testing"],
+.graph.hide-networking .node[data-kind="networking"],
+.graph.hide-action .node[data-kind="action"]{display:none}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;
+  font-size:12px;font-weight:600;background:#efece6;color:var(--muted);border:1px solid var(--line);
+  white-space:nowrap}
+.h-chip{padding:5px 12px;font-size:12.5px}
+/* clickable type-filter chips */
+.h-toggle{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:.15s;-webkit-appearance:none;appearance:none}
+.h-toggle:hover{filter:brightness(.97)}
+.h-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.h-toggle.off{opacity:.4;text-decoration:line-through;
+  background:#f1efea;color:#a39d92;border-color:var(--line)}
+.h-toggle.off .ic{opacity:.6}
+/* none of this kind survive the current detail level: dimmed, not struck */
+.h-toggle.empty:not(.off){opacity:.45}
+.h-n{font-variant-numeric:tabular-nums}
+.k-decision{background:var(--gold-soft);color:#8a6d1f;border-color:#efe1bd}
+.k-action{background:var(--blue-soft);color:#2c5681;border-color:#cfe0f1}
+.k-prompt{background:var(--violet-soft);color:#5a3fa0;border-color:#ddd2f5}
+.k-principle{background:var(--teal-soft);color:#1f6b61;border-color:#bfe4dd}
+.k-security{background:#fdeceb;color:#b0382c;border-color:#f3ccc7}
+.k-optim{background:#fff2dd;color:#9a6a16;border-color:#f3dcae}
+.k-test{background:#e6f4ec;color:#2f7d54;border-color:#c6e6d3}
+.k-net{background:#e2f1f8;color:#1f6f93;border-color:#c2e2ef}
+.k-summary{background:#efeae1;color:#5f574a;border-color:#ddd5c7}
+.c-tool{background:#f0eee9;color:#5b5650;font-family:ui-monospace,Menlo,monospace}
+.c-err{background:var(--red-soft);color:var(--red);border-color:#f0cbbb}
+.c-key{background:var(--gold-soft);color:#8a6d1f;border-color:#efe1bd;
+  text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+.c-minor{background:transparent;color:#b0aa9e;border-style:dashed;
+  text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+.c-time{background:transparent;color:#a39d92}
+.mat-count{background:var(--gold);color:#fff;border-radius:999px;padding:0 7px;
+  font-size:11px;font-weight:700;margin-left:2px}
+/* inline SVG icons (no emoji anywhere) */
+.ic{width:1.05em;height:1.05em;flex:none;vertical-align:-0.15em}
+.spine-dot .ic{width:13px;height:13px;vertical-align:0}
+.chip .ic{margin-right:1px}
+.mat-fav{display:flex;color:#9a948a}.mat-fav .ic{width:16px;height:16px}
+.dw-ic .ic,.dw-ic{display:inline-flex}
+.mat-kind .ic{display:none}
+
+.graph{position:relative;padding-left:34px}
+/* spine: each node draws the segment from its own dot down to the next node's,
+   so the line starts at the first dot and stops at the last (no stub past either
+   end). It tracks live height, so collapse/expand keeps the segments connected.
+   Each segment takes its node's colour, turning the spine into a colour chain. */
+.node::before{content:"";position:absolute;left:-23px;top:var(--bead-y);width:2px;
+  height:calc(100% + var(--gap));background:var(--accent);z-index:0}
+.node:last-child::before{display:none}
+.node{position:relative;margin:0 0 var(--gap);opacity:0;transform:translateY(14px);
+  animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms);
+  --indent:0px;--bead-y:35px;--gap:42px;--accent:var(--gold);background:transparent}
+/* each kind's accent colour, used by the spine, the bead and the hover flow */
+.k-action{--accent:var(--blue)} .k-prompt{--accent:var(--violet)}
+.k-principle{--accent:var(--teal)} .k-security{--accent:#ec3a2c}
+.k-optim{--accent:#f7a008} .k-test{--accent:#12b866} .k-net{--accent:#119bd8}
+.k-summary{--accent:#6e6699}
+@keyframes rise{to{opacity:1;transform:none}}
+/* priority staircase: lower-priority nodes step further right off the spine, so
+   the key steps sit closest to the line and minor ones cascade outward */
+.node[data-rank="2"]{--indent:28px}
+.node[data-rank="1"]{--indent:56px}
+/* the spine bead is gone: the kind icon badge (.node-ico) is the only marker in
+   both states, so an open card shows one icon, not two. */
+.spine-dot{display:none}
+.k-action .spine-dot{background:var(--blue)} .k-prompt .spine-dot{background:var(--violet)}
+.k-principle .spine-dot{background:var(--teal)}
+.k-security .spine-dot{background:#c0392b} .k-optim .spine-dot{background:#d99412}
+.k-test .spine-dot{background:#2f9d63} .k-net .spine-dot{background:#1f87b0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px 20px;margin-left:var(--indent,0px);
+  transition:transform .25s,box-shadow .28s,border-color .28s,background-color .28s,padding .28s,border-radius .3s cubic-bezier(.2,.7,.3,1)}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(40,36,28,.08),0 18px 40px rgba(40,36,28,.08);
+  border-color:#ded8cf}
+/* connector tick: stretches from the spine to the card, so it spans the staircase
+   indent and visibly links each stepped-out card back to its bead */
+.node::after{content:"";position:absolute;left:-22px;top:calc(var(--bead-y) - 1px);height:2px;
+  width:calc(18px + var(--indent,0px));background:var(--line);
+  background-size:220% 100%;transition:width .2s,background-color .2s}
+/* on hover the connector lights up in the bubble's own colour and a brighter band
+   flows along it toward the bubble, so the link reads as live current */
+.node:hover::after{
+  background-image:linear-gradient(90deg,
+    color-mix(in srgb,var(--accent) 12%,transparent) 0%,
+    var(--accent) 45%,
+    color-mix(in srgb,#fff 65%,var(--accent)) 50%,
+    var(--accent) 55%,
+    color-mix(in srgb,var(--accent) 12%,transparent) 100%);
+  animation:flow 1s linear infinite}
+@keyframes flow{from{background-position:-120% 0}to{background-position:120% 0}}
+/* and the same live current runs down the bubble's own spine segment to the next */
+.node:hover::before{background-image:linear-gradient(180deg,
+    var(--accent) 0%,
+    color-mix(in srgb,#fff 65%,var(--accent)) 50%,
+    var(--accent) 100%);
+  background-size:100% 220%;animation:flowv 1.1s linear infinite}
+@keyframes flowv{from{background-position:0 -120%}to{background-position:0 120%}}
+/* story bridge: the connective sentence that ties this step to the next. It sits
+   in the gap below the card, along the spine. When detail or type filters discard
+   nodes, JS stitches their sentences together so the narrative stays unbroken. */
+.bridge{display:flex;align-items:flex-start;gap:7px;margin:11px 0 1px;padding-left:3px;
+  color:#94897c;font-size:12.5px;font-style:italic;line-height:1.5;max-width:60ch}
+.bridge.empty{display:none}
+.br-ic{flex:none;margin-top:1px;color:#c4bdb0;line-height:0}
+.br-ic .ic{width:13px;height:13px;transform:rotate(90deg)}
+.br-text{flex:1;min-width:0}
+.k-decision .card{border-left:3px solid var(--gold)}
+.k-action .card{border-left:3px solid var(--blue)}
+.k-prompt .card{border-left:3px solid var(--violet)}
+.k-principle .card{border-left:3px solid var(--teal);
+  background:linear-gradient(180deg,#fbfffe,#fff)}
+.k-security .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#fffbfb,#fff)}
+.k-optim .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#fffdf8,#fff)}
+.k-test .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#fafffb,#fff)}
+.k-security .node-title{color:#a8362b} .k-optim .node-title{color:#8a6012}
+.k-test .node-title{color:#256b45}
+.k-test .rationale{background:linear-gradient(#f3fbf6,#e8f6ee);border-color:#cbe8d6}
+.k-test .rat-tag{color:#2f9d63}
+.k-net .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#f8fdff,#fff)}
+.k-net .node-title{color:#1a647f}
+.k-summary .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#fcfaf6,#fff)}
+.k-summary .node-title{color:#5a5246}
+.k-net .rationale{background:linear-gradient(#f2fafd,#e6f3f9);border-color:#c4e3ef}
+.k-net .rat-tag{color:#1f87b0}
+.k-security .rationale{background:linear-gradient(#fff6f5,#fdeceb);border-color:#f3cdc8}
+.k-security .rat-tag{color:#c0392b}
+.k-optim .rationale{background:linear-gradient(#fffaf0,#fff3df);border-color:#f0dcb0}
+.k-optim .rat-tag{color:#cf8c14}
+/* the card header doubles as a collapse toggle for its node */
+.card-head{display:flex;align-items:flex-start;gap:12px;margin:-6px -8px 6px;padding:6px 8px;
+  border-radius:10px;cursor:pointer;user-select:none;transition:background .15s}
+.card-head:hover{background:rgba(202,162,74,.08)}
+.card-head:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+/* the kind icon, rendered as a round badge. It is small in the open card and
+   swells into the big bubble face when the node collapses, morphing on one
+   element so the open/closed states read as the same object resizing. */
+.node-ico{flex:none;align-self:flex-start;display:grid;place-items:center;
+  position:relative;z-index:2;       /* the face sits in front of the spine lines */
+  width:34px;height:34px;border-radius:50%;color:#fff;background:var(--accent);
+  box-shadow:0 2px 6px rgba(40,36,28,.16);
+  transition:width .32s cubic-bezier(.2,.7,.3,1),height .32s cubic-bezier(.2,.7,.3,1),
+    box-shadow .28s,transform .24s cubic-bezier(.2,.7,.3,1)}
+.node-ico .ic{width:18px;height:18px;transition:width .32s cubic-bezier(.2,.7,.3,1),
+  height .32s cubic-bezier(.2,.7,.3,1)}
+.ch-text{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.node-caret{flex:none;margin-top:3px;color:#c4bdb0;line-height:0;
+  transition:transform .25s cubic-bezier(.2,.7,.3,1),color .15s}
+.node-caret .ic{width:15px;height:15px}
+.card-head:hover .node-caret{color:var(--gold)}
+.card-head[aria-expanded="true"] .node-caret{transform:rotate(90deg)}
+/* collapsible body: smooth height via the grid-template-rows 1fr/0fr trick */
+.card-body{display:grid;grid-template-rows:1fr;
+  transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1),opacity .22s ease}
+.cb-inner{overflow:hidden;min-height:0}
+/* once a card is open, let its content overflow so hover tooltips are not clipped
+   at the card edge. The switch is delayed past the reveal so collapsing still clips
+   cleanly; collapsing reverts to hidden immediately (base rule, no transition). */
+.node:not(.collapsed) .cb-inner{overflow:visible;transition:overflow 0s .32s}
+.node.collapsed .card-body{grid-template-rows:0fr;opacity:0}
+/* collapsed node = a graph bubble: the kind icon swells into a big round face
+   with the title beside it, the card chrome (border, fill, padding, body) all
+   melting away. Clicking shrinks the face back to a badge and the full card
+   grows around it, so open and closed read as one object resizing. */
+.node.collapsed{--bead-y:39px}                   /* spine meets the big face centre */
+.node.collapsed .card{background:transparent;border:none;box-shadow:none;
+  padding:4px 0;border-radius:0}
+.node.collapsed .card:hover{transform:none}
+.node.collapsed .card-head{margin:0;padding:6px 4px;gap:16px;align-items:center}
+.node.collapsed .card-head:hover{background:transparent}
+.node.collapsed .node-ico{width:58px;height:58px;box-shadow:0 5px 16px rgba(40,36,28,.20)}
+.node.collapsed .node-ico .ic{width:27px;height:27px}
+.node.collapsed:hover .node-ico{transform:scale(1.07);box-shadow:0 8px 22px rgba(40,36,28,.26)}
+.node.collapsed .chips{display:none}
+.node.collapsed .node-caret{display:none}
+.node.collapsed .node-title{font-size:15.5px}
+/* the spine connector reaches into the big face when collapsed */
+.node.collapsed::after{width:calc(34px + var(--indent,0px))}
+.node-title{font-size:16px;margin:0;font-weight:700;letter-spacing:-.01em}
+.k-principle .node-title{color:#1f6b61}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.node-summary{color:#534f48;font-size:14.5px}
+.node-summary p{margin:.5em 0}
+.rationale{display:flex;gap:10px;margin-top:12px;padding:12px 14px;border-radius:10px;
+  background:linear-gradient(#fffdf6,#fdf8ea);border:1px solid #f0e6c8}
+.k-principle .rationale{background:linear-gradient(#f4fbf9,#e9f6f3);border-color:#cdeae3}
+.rat-tag{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--gold);margin-top:2px}
+.k-principle .rat-tag{color:var(--teal)}
+.rat-body{font-size:14px;color:#5f5743}
+.k-principle .rat-body{color:#3c5a55}
+.rat-body p{margin:.3em 0}
+
+.drawer{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.drawer summary{cursor:pointer;list-style:none;font-size:13px;font-weight:600;
+  color:var(--muted);display:flex;align-items:center;gap:8px;user-select:none}
+.drawer summary::-webkit-details-marker{display:none}
+.dw-ic{font-family:ui-monospace,monospace;font-size:12px;color:var(--gold)}
+.dw-hint{font-weight:500;font-size:11.5px;color:#b4ad9f;font-style:italic;margin-left:auto}
+.drawer[open] summary{color:var(--ink)}
+
+/* prominent, obviously-clickable What ran / Result toggles */
+.code-drawer{border-top:none;margin-top:14px;padding-top:0}
+.code-drawer>summary{padding:10px 14px;border:1px solid #d8c9f2;border-radius:10px;
+  background:linear-gradient(#7c4ddb,#6b3fce);color:#fff;font-size:13.5px;font-weight:800;
+  letter-spacing:.01em;box-shadow:0 2px 8px rgba(108,63,206,.28);transition:.15s}
+.code-drawer>summary:hover{background:linear-gradient(#8a5ce8,#7a4ee0);
+  box-shadow:0 4px 14px rgba(108,63,206,.38)}
+.code-drawer>summary .dw-ic{font-size:13px;color:#fff}
+.code-drawer>summary .dw-label{font-weight:800}
+.code-drawer>summary .dw-hint{color:#e6dafb;opacity:.95}
+.code-drawer>summary .chev{margin-left:8px;font-size:12px;color:#fff;
+  transition:transform .2s}
+.code-drawer[open]>summary .chev{transform:rotate(90deg)}
+.code-drawer[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0;
+  border-bottom-color:transparent}
+.code-drawer .dw-hint{margin-left:auto}
+.res-drawer>summary{background:linear-gradient(#eef4fb,#e6eff8);border-color:#cfe0f1;
+  color:#2c5681;box-shadow:0 1px 2px rgba(40,36,28,.05)}
+.res-drawer>summary:hover{border-color:var(--blue);background:#e3eefa}
+.res-drawer>summary .dw-ic,.res-drawer>summary .chev{color:var(--blue)}
+.res-drawer>summary .dw-hint{color:#7e93ad;opacity:1}
+.code-drawer .cmd,.code-drawer .code,.code-drawer .emb{margin-top:0;
+  border-top-left-radius:0;border-top-right-radius:0}
+.drawer .code,.drawer .cmd,.drawer .mat-wrap{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+.code{background:#1f1d1a;color:#e8e3d8;border-radius:8px;padding:12px 14px;margin:8px 0 2px;
+  font:12.5px/1.55 ui-monospace,Menlo,monospace;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.code.dim{background:#2a2824;color:#bdb6a6}
+code{background:#f0ece3;border-radius:5px;padding:1px 5px;font:12.5px ui-monospace,Menlo,monospace}
+
+/* annotated shell command: overflow visible so tooltips are not clipped */
+.cmd{background:#1f1d1a;color:#d7d1c5;border-radius:8px;padding:12px 14px;margin:8px 0 2px;
+  font:12.5px/1.7 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;
+  overflow:visible}
+.tok{position:relative;border-radius:3px;cursor:help;transition:background .12s}
+.tok:hover,.tok:focus{background:rgba(255,255,255,.10);outline:none}
+.t-cmd{color:#f0c969;font-weight:600} .t-flag{color:#7fb2e8} .t-str{color:#9ed98b}
+.t-var{color:#e8a76b} .t-op{color:#e98aa8;font-weight:600} .t-path{color:#cfc8bb}
+.t-arg{color:#d7d1c5} .t-sub{color:#7fd4b0;font-weight:600}
+.t-redir{color:#e0a85a;font-weight:600} .t-dev{color:#9ed0e8;font-style:italic}
+.t-script{color:#7fd4b0;font-weight:600;text-decoration:underline dotted rgba(255,255,255,.45);
+  text-underline-offset:3px}
+.cmd.out{background:#2a2824;color:#bdb6a6;line-height:1.65}
+.t-url{color:#7fb2e8;text-decoration:underline} .t-perm{color:#6fd0c4}
+.t-exit{color:#f0c969;font-weight:600} .t-err{color:#ef8a6a;font-weight:600}
+.t-warn{color:#e8c069;font-weight:600}
+/* embedded program panel + python tokens */
+.emb-chip{display:inline-block;padding:1px 9px;border-radius:6px;background:#3a4a5a;
+  color:#cfe0f1;font-weight:600;font-size:11.5px}
+/* overflow visible so a tooltip on the first code line is not clipped by the panel;
+   corners are rounded per child instead of by clipping the container */
+.emb{margin:8px 0 2px;border:1px solid #34302a;border-radius:8px;overflow:visible;
+  background:#17150f}
+.emb-head{display:flex;align-items:center;gap:9px;padding:8px 12px;background:#221f18;
+  border-radius:7px 7px 0 0;font:600 12px ui-monospace,Menlo,monospace;color:#cdc6b8}
+.emb>:last-child{border-radius:0 0 7px 7px}
+.emb-lang{flex:none;background:#2f6b61;color:#eafff8;border-radius:999px;padding:2px 10px;
+  font-size:11px;font-weight:700}
+.emb-path{flex:1;min-width:0;color:#8f897b;font-size:11.5px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.emb-code{margin:0;border-radius:0;background:#17150f}
+.emb-more{display:inline-block;margin:0;padding:8px 12px;font-size:12px;font-weight:700;
+  color:#7fb2e8;text-decoration:none;background:#221f18;width:100%}
+.emb-more:hover{text-decoration:underline}
+.shell-explain{display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:12px;
+  font-weight:700;color:#2c5681;text-decoration:none;background:#eef4fb;
+  border:1px solid #cfe0f1;border-top:none;border-radius:0 0 8px 8px}
+.shell-explain:hover{background:#e3eefa;text-decoration:underline}
+.t-kw{color:#d987c9;font-weight:600} .t-builtin{color:#f0c969} .t-mod{color:#6fd0c4}
+.t-name{color:#d7d1c5} .t-num{color:#e8a76b} .t-cmt{color:#7c766a;font-style:italic}
+.t-attr{color:#9fd0e8}
+.c-lang{background:#e7f6ee;color:#1f7a4d;border-color:#bfe4cf;font-weight:700}
+.tok .tip{visibility:hidden;opacity:0;position:absolute;left:0;bottom:calc(100% + 8px);
+  width:max-content;max-width:300px;background:#fff;color:var(--ink);border:1px solid var(--line);
+  border-radius:10px;box-shadow:0 8px 28px rgba(20,18,14,.22);padding:10px 12px;z-index:20;
+  font:13px/1.45 -apple-system,Inter,sans-serif;transition:opacity .14s,transform .14s;
+  transform:translateY(4px);text-align:left;white-space:normal}
+.tok .tip::after{content:"";position:absolute;left:16px;top:100%;border:6px solid transparent;
+  border-top-color:#fff}
+.tok:hover .tip,.tok:focus .tip{visibility:visible;opacity:1;transform:translateY(0);
+  transition-delay:.12s}
+.tip-sig{display:block;font:600 12.5px/1.4 ui-monospace,Menlo,monospace;color:#1f1d1a;
+  padding-bottom:5px;margin-bottom:5px;border-bottom:1px solid var(--line);
+  white-space:pre-wrap;word-break:break-word}
+.tip-d{display:block;color:#4a453d}
+.tip-l{display:inline-block;margin-top:7px;font-size:12px;font-weight:700;color:var(--blue);
+  text-decoration:none}
+.tip-l:hover{text-decoration:underline}
+
+/* other paths considered */
+.alts{margin-top:12px;padding:12px 14px;border-radius:10px;background:#f3f7fb;
+  border:1px solid #d9e6f2}
+.alts-head{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--blue);display:flex;align-items:center;gap:7px}
+.alts-ic{font-size:14px}
+.alts-sub{font-weight:600;letter-spacing:0;text-transform:none;font-size:11.5px;
+  color:#9bb0c4;font-style:italic}
+.alts-list{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.alt{display:flex;gap:10px;padding-left:12px;border-left:2px solid #bcd3e8}
+.alt-opt{font-weight:700;font-size:13.5px;color:#2c5681;flex:0 0 auto;min-width:120px}
+.alt-tr{font-size:13.5px;color:#52617a}
+.alt-tr p{margin:0;display:inline}
+.alt-l{margin-left:6px;font-size:12px;font-weight:700;color:var(--blue);text-decoration:none}
+.alt-l:hover{text-decoration:underline}
+
+.mat-kind{display:inline-block;margin-left:7px;padding:1px 7px;border-radius:999px;
+  font-size:10px;font-weight:700;letter-spacing:.03em;vertical-align:middle;
+  text-transform:uppercase;background:#eee;color:#666}
+.mk-ref{background:#eef1f4;color:#5a6675} .mk-tut{background:#e7f6ee;color:#1f7a4d}
+.mk-lang{background:#efeafb;color:#5a3fa0} .mk-spec{background:#fdf3df;color:#8a6d1f}
+.mk-book{background:#f6eae3;color:#9a5a37}
+.mat-wrap{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.mat-link{display:flex;gap:11px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  text-decoration:none;color:inherit;background:#fcfbf8;transition:.18s}
+a.mat-link:hover{border-color:var(--gold);background:var(--gold-soft);transform:translateX(2px)}
+.mat-card{flex-direction:column;gap:0;padding:0;overflow:hidden}
+.mat-card:hover{border-color:var(--gold)}
+.mat-open{display:flex;gap:11px;padding:10px 12px;text-decoration:none;color:inherit}
+.mat-open:hover{background:var(--gold-soft)}
+.mat-sum{border-top:1px dashed var(--line);background:#fbfaf6}
+.mat-sum summary{cursor:pointer;list-style:none;padding:7px 12px;font-size:12px;
+  font-weight:700;color:var(--gold);display:flex;align-items:center;gap:6px;user-select:none}
+.mat-sum summary::-webkit-details-marker{display:none}
+.ms-ic{font-size:11px}
+.mat-sum[open] summary{color:#8a6d1f}
+.mat-sum-body{padding:2px 14px 12px;font-size:13.5px;color:#534f48;animation:fade .2s ease}
+.mat-sum-body p{margin:.35em 0}
+.mat-fav{font-size:15px;margin-top:1px}
+.mat-body{display:flex;flex-direction:column;gap:1px}
+.mat-title{font-weight:700;font-size:14px;color:var(--ink)}
+.mat-host{font-size:12px;color:var(--blue)}
+.mat-note{font-size:12.5px;color:var(--muted);margin-top:3px}
+.mat-doc{border:1px solid var(--line);border-radius:10px;background:#fcfbf8;overflow:hidden}
+.mat-doc summary{display:flex;gap:11px;align-items:center;padding:10px 12px;cursor:pointer;
+  list-style:none;font-weight:700}
+.mat-doc summary::-webkit-details-marker{display:none}
+.mat-doc[open] summary{border-bottom:1px solid var(--line);background:#faf8f2}
+.mat-doc-body{padding:12px 16px;font-size:14px;color:#534f48}
+.md-h{margin:.6em 0 .3em;line-height:1.25;color:var(--ink);font-weight:700}
+.md-h1{font-size:18px} .md-h2{font-size:16px} .md-h3{font-size:14.5px;color:#5f5743}
+.md-h:first-child{margin-top:0}
+.mat-empty{font-size:13px;color:#a39d92;font-style:italic;padding:4px 0}
+footer{margin-top:60px;text-align:center;color:#b6b0a4;font-size:12.5px}
+footer b{color:var(--gold)}
+/* respect a reader who prefers less motion: keep state changes, drop the animation */
+@media (prefers-reduced-motion:reduce){
+  .node{animation:none;opacity:1;transform:none}
+  .card,.card-body,.spine-dot,.node::after,.node::before,.node-caret,.node-ico,
+  .node-ico .ic,.gt-btn,.drawer .code,.drawer .cmd,.drawer .mat-wrap{transition:none;animation:none}
+}
+</style></head>
+<body><div class="wrap">
+<header>
+  <div class="top-row"><a class='parent-link' href='../goldy-report.html' title='Go to parent doc' aria-label='Go to parent doc'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 13V3.4M4.3 7.1L8 3.4l3.7 3.7"/></svg></a><span class="eyebrow"><span class="goldy-mark"><svg class='ic' viewBox='0 0 64 64' fill='none' xmlns='http://www.w3.org/2000/svg' aria-hidden='true'><g>
+    <path d="M 6 43.5 C 6.5 43.74 7.97 44.57 8.99 44.96 C 10 45.36 11.05 45.63 12.09 45.88 C 13.13 46.13 14.18 46.32 15.23 46.47 C 16.28 46.61 17.33 46.71 18.38 46.76 C 19.43 46.82 20.48 46.83 21.53 46.8 C 22.57 46.77 23.62 46.69 24.66 46.59 C 25.7 46.48 26.74 46.33 27.77 46.15 C 28.8 45.98 29.82 45.76 30.84 45.52 C 31.85 45.28 32.86 45.01 33.86 44.71 C 34.86 44.41 35.86 44.09 36.84 43.74 C 37.82 43.4 38.79 43.03 39.75 42.64 C 40.72 42.25 41.68 41.84 42.61 41.42 C 43.54 41 44.45 40.57 45.32 40.12 C 46.19 39.68 47.02 39.22 47.84 38.74 C 48.66 38.25 49.46 37.75 50.23 37.22 C 51.01 36.69 51.76 36.14 52.48 35.57 C 53.21 35 53.91 34.41 54.59 33.79 C 55.26 33.18 55.91 32.54 56.53 31.88 C 57.15 31.22 57.75 30.55 58.3 29.84 C 58.84 29.13 59.39 28.4 59.82 27.62 C 60.24 26.84 60.54 25.98 60.84 25.15 C 61.13 24.31 61.39 23.46 61.59 22.6 C 61.79 21.75 61.94 20.87 62.04 20 C 62.14 19.13 62.19 18.26 62.17 17.36 C 62.16 16.47 62.09 15.5 61.95 14.64 C 61.82 13.78 61.61 12.97 61.36 12.19 C 61.1 11.4 60.79 10.64 60.43 9.93 C 60.07 9.22 59.65 8.54 59.19 7.91 C 58.74 7.28 58.24 6.69 57.7 6.15 C 57.17 5.61 56.59 5.12 56 4.69 C 55.4 4.25 54.77 3.86 54.12 3.53 C 53.48 3.19 52.8 2.91 52.13 2.68 C 51.45 2.45 50.75 2.27 50.05 2.14 C 49.34 2.02 48.63 1.94 47.92 1.92 C 47.21 1.9 46.49 1.93 45.78 2 C 45.07 2.08 44.36 2.21 43.66 2.39 C 42.97 2.57 42.23 2.82 41.6 3.08 C 40.96 3.35 40.39 3.64 39.85 3.96 C 39.31 4.29 38.81 4.65 38.36 5.03 C 37.9 5.42 37.48 5.84 37.12 6.27 C 36.75 6.71 36.42 7.18 36.15 7.66 C 35.87 8.13 35.64 8.63 35.46 9.14 C 35.29 9.64 35.16 10.17 35.09 10.68 C 35.01 11.2 34.99 11.73 35.02 12.24 C 35.06 12.75 35.14 13.26 35.28 13.75 C 35.41 14.24 35.6 14.71 35.83 15.16 C 36.07 15.6 36.35 16.03 36.67 16.42 C 36.99 16.8 37.36 17.16 37.75 17.48 C 38.15 17.8 38.59 18.09 39.04 18.33 C 39.48 18.57 40.01 18.77 40.42 18.9 C 40.83 19.03 41.17 19.06 41.53 19.1 C 41.89 19.13 42.24 19.14 42.59 19.11 C 42.93 19.09 43.26 19.03 43.57 18.95 C 43.88 18.87 44.18 18.76 44.46 18.63 C 44.74 18.51 45 18.35 45.23 18.18 C 45.47 18.01 45.68 17.81 45.87 17.61 C 46.06 17.4 46.22 17.18 46.36 16.95 C 46.49 16.71 46.6 16.47 46.68 16.22 C 46.76 15.98 46.82 15.72 46.84 15.47 C 46.87 15.21 46.87 14.95 46.85 14.7 C 46.82 14.45 46.77 14.19 46.7 13.94 C 46.62 13.69 46.45 13.32 46.4 13.2 C 46.35 13.08 46.41 13.07 46.4 13.2 C 46.39 13.33 46.38 13.73 46.34 13.97 C 46.3 14.2 46.24 14.42 46.16 14.62 C 46.08 14.81 45.99 14.99 45.88 15.15 C 45.77 15.31 45.65 15.44 45.52 15.56 C 45.4 15.68 45.26 15.77 45.12 15.85 C 44.98 15.93 44.83 16 44.69 16.04 C 44.54 16.09 44.39 16.12 44.23 16.14 C 44.08 16.16 43.93 16.16 43.77 16.15 C 43.62 16.14 43.46 16.12 43.3 16.08 C 43.14 16.05 42.98 16 42.82 15.93 C 42.66 15.87 42.5 15.8 42.34 15.7 C 42.17 15.61 42.01 15.52 41.84 15.39 C 41.66 15.26 41.47 15.1 41.3 14.93 C 41.13 14.75 40.95 14.54 40.82 14.35 C 40.7 14.16 40.62 13.98 40.55 13.8 C 40.49 13.62 40.46 13.45 40.45 13.29 C 40.44 13.13 40.45 12.98 40.47 12.84 C 40.5 12.69 40.54 12.56 40.59 12.42 C 40.64 12.29 40.71 12.17 40.79 12.04 C 40.87 11.92 40.96 11.8 41.07 11.69 C 41.17 11.57 41.29 11.46 41.43 11.35 C 41.57 11.24 41.72 11.13 41.89 11.03 C 42.06 10.93 42.24 10.83 42.45 10.75 C 42.66 10.66 42.88 10.58 43.14 10.5 C 43.4 10.43 43.7 10.35 44.03 10.29 C 44.36 10.23 44.77 10.17 45.12 10.16 C 45.47 10.14 45.81 10.15 46.14 10.18 C 46.46 10.22 46.78 10.27 47.07 10.35 C 47.37 10.43 47.65 10.53 47.92 10.64 C 48.18 10.76 48.43 10.89 48.66 11.04 C 48.89 11.19 49.11 11.35 49.3 11.52 C 49.5 11.69 49.68 11.88 49.84 12.08 C 50 12.27 50.14 12.48 50.26 12.69 C 50.39 12.91 50.5 13.13 50.59 13.36 C 50.68 13.6 50.76 13.84 50.82 14.1 C 50.88 14.36 50.93 14.63 50.95 14.92 C 50.98 15.21 50.99 15.52 50.98 15.85 C 50.96 16.18 50.92 16.52 50.86 16.9 C 50.79 17.27 50.71 17.68 50.59 18.08 C 50.48 18.47 50.34 18.87 50.17 19.27 C 50.01 19.67 49.81 20.08 49.59 20.48 C 49.37 20.89 49.08 21.28 48.85 21.72 C 48.61 22.16 48.43 22.65 48.19 23.13 C 47.94 23.62 47.68 24.13 47.38 24.63 C 47.07 25.14 46.73 25.65 46.36 26.16 C 45.99 26.68 45.58 27.2 45.15 27.71 C 44.71 28.22 44.24 28.74 43.74 29.25 C 43.24 29.76 42.71 30.27 42.15 30.77 C 41.59 31.27 41.02 31.75 40.39 32.24 C 39.75 32.74 39.08 33.23 38.35 33.73 C 37.62 34.23 36.81 34.76 36.02 35.26 C 35.24 35.75 34.44 36.23 33.64 36.7 C 32.84 37.16 32.03 37.61 31.21 38.03 C 30.39 38.46 29.56 38.87 28.72 39.25 C 27.88 39.64 27.03 40 26.17 40.34 C 25.31 40.68 24.44 41 23.56 41.29 C 22.68 41.58 21.79 41.84 20.88 42.08 C 19.98 42.31 19.06 42.52 18.13 42.7 C 17.19 42.87 16.24 43.02 15.28 43.14 C 14.31 43.25 13.33 43.33 12.33 43.38 C 11.33 43.43 10.32 43.42 9.26 43.44 C 8.21 43.46 6.54 43.49 6 43.5 Z" fill="#fffaf0" stroke="#fffaf0" stroke-width="2.4" stroke-linejoin="round"></path>
+    <path d="M 7 50 C 7.26 50.18 8.04 50.79 8.58 51.11 C 9.13 51.43 9.71 51.66 10.28 51.9 C 10.85 52.14 11.44 52.35 12.02 52.54 C 12.61 52.73 13.2 52.89 13.79 53.04 C 14.39 53.19 14.99 53.31 15.59 53.42 C 16.19 53.52 16.79 53.6 17.4 53.67 C 18 53.73 18.61 53.78 19.22 53.8 C 19.82 53.83 20.43 53.83 21.04 53.82 C 21.64 53.81 22.25 53.78 22.86 53.73 C 23.46 53.68 24.06 53.61 24.67 53.52 C 25.27 53.43 25.87 53.33 26.46 53.2 C 27.06 53.08 27.65 52.94 28.24 52.78 C 28.82 52.62 29.41 52.44 29.99 52.25 C 30.57 52.05 31.14 51.84 31.71 51.61 C 32.28 51.38 32.84 51.14 33.4 50.87 C 33.96 50.61 34.52 50.33 35.07 50.02 C 35.61 49.72 36.16 49.39 36.68 49.04 C 37.21 48.7 37.72 48.34 38.21 47.96 C 38.7 47.58 39.19 47.19 39.65 46.78 C 40.1 46.36 40.56 45.94 40.95 45.46 C 41.33 44.98 41.63 44.44 41.93 43.91 C 42.23 43.39 42.51 42.85 42.77 42.3 C 43.02 41.76 43.25 41.2 43.44 40.64 C 43.64 40.07 43.81 39.5 43.95 38.92 C 44.08 38.35 44.19 37.76 44.26 37.17 C 44.33 36.58 44.37 35.99 44.37 35.4 C 44.37 34.8 44.34 34.21 44.27 33.62 C 44.19 33.03 44.08 32.44 43.93 31.86 C 43.78 31.28 43.59 30.7 43.36 30.15 C 43.13 29.59 42.86 29.03 42.56 28.51 C 42.27 27.99 41.93 27.5 41.59 27.04 C 41.24 26.57 40.88 26.14 40.5 25.74 C 40.12 25.34 39.72 24.97 39.3 24.63 C 38.89 24.3 38.46 23.99 38.01 23.72 C 37.57 23.45 37.12 23.21 36.66 23.01 C 36.2 22.8 35.73 22.63 35.26 22.49 C 34.79 22.35 34.32 22.24 33.85 22.16 C 33.37 22.08 32.9 22.04 32.43 22.02 C 31.96 22 31.49 22.01 31.03 22.06 C 30.57 22.1 30.11 22.17 29.67 22.27 C 29.22 22.37 28.78 22.49 28.35 22.65 C 27.93 22.8 27.51 22.99 27.11 23.2 C 26.71 23.41 26.32 23.64 25.95 23.9 C 25.59 24.17 25.23 24.46 24.91 24.77 C 24.58 25.08 24.27 25.41 23.98 25.77 C 23.7 26.13 23.43 26.53 23.21 26.91 C 22.98 27.29 22.8 27.68 22.65 28.05 C 22.5 28.41 22.4 28.75 22.31 29.1 C 22.23 29.45 22.17 29.8 22.14 30.14 C 22.11 30.48 22.11 30.81 22.14 31.13 C 22.16 31.45 22.21 31.76 22.29 32.06 C 22.36 32.36 22.45 32.65 22.57 32.92 C 22.68 33.18 22.82 33.44 22.98 33.68 C 23.13 33.91 23.3 34.13 23.49 34.33 C 23.67 34.53 23.87 34.71 24.08 34.87 C 24.29 35.03 24.52 35.17 24.75 35.28 C 24.98 35.4 25.22 35.49 25.46 35.57 C 25.7 35.64 25.95 35.69 26.2 35.72 C 26.45 35.75 26.71 35.75 26.96 35.74 C 27.21 35.72 27.47 35.68 27.72 35.62 C 27.97 35.56 28.22 35.48 28.47 35.38 C 28.72 35.27 29.08 35.06 29.2 35 C 29.32 34.94 29.33 34.98 29.2 35 C 29.07 35.02 28.66 35.09 28.41 35.1 C 28.15 35.12 27.91 35.11 27.68 35.08 C 27.46 35.05 27.24 35.01 27.04 34.94 C 26.84 34.88 26.66 34.8 26.49 34.71 C 26.32 34.62 26.17 34.52 26.03 34.4 C 25.88 34.29 25.76 34.17 25.65 34.04 C 25.54 33.91 25.44 33.77 25.36 33.63 C 25.28 33.48 25.21 33.34 25.15 33.19 C 25.1 33.03 25.05 32.88 25.03 32.72 C 25 32.57 24.98 32.41 24.98 32.25 C 24.97 32.09 24.98 31.92 25 31.76 C 25.02 31.6 25.06 31.43 25.11 31.27 C 25.15 31.1 25.21 30.94 25.29 30.77 C 25.36 30.6 25.45 30.43 25.55 30.26 C 25.65 30.09 25.76 29.93 25.9 29.75 C 26.04 29.56 26.22 29.34 26.4 29.15 C 26.58 28.96 26.79 28.77 27 28.61 C 27.2 28.44 27.41 28.3 27.63 28.18 C 27.84 28.06 28.07 27.95 28.29 27.86 C 28.52 27.77 28.75 27.7 28.98 27.65 C 29.21 27.59 29.44 27.55 29.67 27.53 C 29.91 27.5 30.14 27.5 30.38 27.5 C 30.61 27.51 30.85 27.53 31.08 27.57 C 31.31 27.6 31.53 27.65 31.76 27.72 C 31.98 27.78 32.2 27.86 32.41 27.95 C 32.63 28.04 32.84 28.15 33.04 28.27 C 33.24 28.38 33.43 28.51 33.61 28.66 C 33.8 28.8 33.98 28.95 34.15 29.12 C 34.31 29.29 34.47 29.47 34.62 29.66 C 34.77 29.85 34.92 30.05 35.05 30.27 C 35.18 30.49 35.29 30.7 35.41 30.96 C 35.54 31.23 35.7 31.57 35.8 31.85 C 35.9 32.13 35.96 32.37 36 32.63 C 36.05 32.89 36.08 33.13 36.09 33.38 C 36.1 33.63 36.09 33.87 36.07 34.12 C 36.05 34.36 36.01 34.6 35.96 34.85 C 35.9 35.1 35.83 35.34 35.75 35.59 C 35.67 35.84 35.57 36.09 35.45 36.34 C 35.34 36.59 35.2 36.85 35.06 37.1 C 34.91 37.36 34.74 37.62 34.56 37.87 C 34.38 38.13 34.19 38.39 33.97 38.64 C 33.76 38.9 33.5 39.13 33.28 39.41 C 33.07 39.68 32.89 40 32.67 40.31 C 32.46 40.62 32.23 40.94 31.98 41.25 C 31.73 41.56 31.47 41.88 31.18 42.18 C 30.89 42.49 30.59 42.79 30.27 43.09 C 29.94 43.39 29.59 43.69 29.23 43.98 C 28.87 44.27 28.5 44.55 28.12 44.83 C 27.73 45.1 27.34 45.37 26.94 45.63 C 26.54 45.88 26.13 46.13 25.71 46.37 C 25.3 46.6 24.87 46.83 24.43 47.04 C 24 47.26 23.55 47.47 23.1 47.66 C 22.65 47.85 22.19 48.04 21.72 48.21 C 21.25 48.38 20.77 48.54 20.28 48.69 C 19.8 48.84 19.3 48.97 18.8 49.1 C 18.3 49.22 17.79 49.33 17.27 49.43 C 16.75 49.53 16.23 49.61 15.7 49.68 C 15.16 49.75 14.62 49.81 14.07 49.86 C 13.52 49.9 12.97 49.94 12.4 49.96 C 11.84 49.97 11.26 49.98 10.68 49.98 C 10.1 49.97 9.51 49.94 8.9 49.94 C 8.29 49.94 7.32 49.99 7 50 Z" fill="#fffaf0" stroke="#fffaf0" stroke-width="2.4" stroke-linejoin="round"></path>
+    <path d="M 16 52.5 C 16.18 52.59 16.73 52.88 17.11 53.02 C 17.48 53.17 17.86 53.27 18.24 53.37 C 18.61 53.48 18.99 53.57 19.37 53.65 C 19.75 53.73 20.13 53.8 20.51 53.86 C 20.89 53.92 21.26 53.97 21.64 54.01 C 22.02 54.05 22.4 54.08 22.77 54.11 C 23.15 54.13 23.52 54.14 23.9 54.15 C 24.27 54.15 24.65 54.15 25.02 54.13 C 25.39 54.12 25.76 54.1 26.13 54.07 C 26.5 54.04 26.87 54 27.24 53.95 C 27.61 53.9 27.97 53.84 28.34 53.78 C 28.7 53.71 29.06 53.64 29.42 53.56 C 29.78 53.48 30.14 53.39 30.5 53.29 C 30.86 53.19 31.21 53.08 31.56 52.97 C 31.91 52.86 32.26 52.73 32.61 52.6 C 32.96 52.47 33.3 52.33 33.65 52.19 C 33.99 52.04 34.33 51.89 34.67 51.72 C 35 51.56 35.34 51.39 35.67 51.21 C 36 51.04 36.33 50.85 36.65 50.66 C 36.98 50.47 37.3 50.26 37.62 50.06 C 37.93 49.86 38.26 49.66 38.53 49.45 C 38.79 49.23 39 48.99 39.22 48.76 C 39.44 48.52 39.65 48.28 39.85 48.03 C 40.05 47.79 40.24 47.54 40.42 47.29 C 40.6 47.04 40.78 46.79 40.94 46.54 C 41.11 46.28 41.26 46.02 41.41 45.76 C 41.55 45.5 41.69 45.24 41.81 44.98 C 41.94 44.72 42.05 44.45 42.16 44.19 C 42.26 43.92 42.36 43.65 42.44 43.38 C 42.52 43.11 42.6 42.85 42.66 42.58 C 42.72 42.31 42.77 42.04 42.81 41.77 C 42.85 41.5 42.88 41.23 42.89 40.96 C 42.91 40.69 42.91 40.42 42.9 40.15 C 42.89 39.89 42.87 39.62 42.83 39.36 C 42.8 39.1 42.75 38.84 42.69 38.58 C 42.62 38.33 42.55 38.08 42.46 37.83 C 42.37 37.58 42.27 37.34 42.16 37.11 C 42.04 36.87 41.91 36.64 41.77 36.42 C 41.63 36.2 41.48 35.99 41.31 35.79 C 41.15 35.58 40.97 35.39 40.78 35.2 C 40.59 35.01 40.38 34.82 40.18 34.67 C 39.99 34.51 39.8 34.38 39.62 34.27 C 39.43 34.15 39.26 34.06 39.08 33.98 C 38.9 33.89 38.72 33.81 38.54 33.75 C 38.36 33.69 38.18 33.64 38 33.6 C 37.82 33.55 37.65 33.52 37.47 33.51 C 37.3 33.49 37.12 33.48 36.96 33.48 C 36.79 33.48 36.62 33.49 36.46 33.51 C 36.3 33.54 36.14 33.57 35.99 33.61 C 35.84 33.65 35.69 33.7 35.55 33.75 C 35.41 33.81 35.27 33.88 35.15 33.95 C 35.02 34.02 34.9 34.1 34.78 34.19 C 34.67 34.27 34.56 34.37 34.46 34.47 C 34.37 34.56 34.28 34.67 34.2 34.78 C 34.11 34.89 34.04 35 33.98 35.12 C 33.91 35.24 33.86 35.36 33.81 35.48 C 33.77 35.6 33.73 35.73 33.71 35.86 C 33.68 35.98 33.66 36.11 33.65 36.24 C 33.65 36.37 33.65 36.5 33.66 36.63 C 33.67 36.76 33.69 36.89 33.72 37.02 C 33.75 37.16 33.78 37.29 33.83 37.41 C 33.88 37.54 33.97 37.74 34 37.8 C 34.03 37.86 34 37.87 34 37.8 C 34 37.73 33.99 37.52 33.99 37.39 C 34 37.26 34.01 37.13 34.04 37.02 C 34.06 36.9 34.09 36.79 34.12 36.68 C 34.16 36.58 34.2 36.48 34.25 36.39 C 34.3 36.31 34.35 36.22 34.41 36.15 C 34.46 36.07 34.53 36 34.59 35.94 C 34.66 35.88 34.72 35.82 34.79 35.77 C 34.86 35.72 34.94 35.68 35.01 35.64 C 35.08 35.61 35.16 35.57 35.24 35.55 C 35.31 35.52 35.39 35.5 35.47 35.49 C 35.55 35.47 35.63 35.46 35.71 35.45 C 35.79 35.45 35.87 35.45 35.95 35.45 C 36.03 35.46 36.12 35.47 36.2 35.48 C 36.28 35.49 36.36 35.51 36.44 35.54 C 36.52 35.56 36.61 35.59 36.69 35.62 C 36.77 35.65 36.85 35.69 36.93 35.74 C 37.01 35.78 37.09 35.83 37.17 35.88 C 37.25 35.93 37.33 35.99 37.41 36.06 C 37.49 36.12 37.57 36.19 37.64 36.26 C 37.72 36.34 37.79 36.42 37.88 36.51 C 37.96 36.6 38.05 36.71 38.14 36.83 C 38.23 36.94 38.34 37.09 38.42 37.21 C 38.5 37.34 38.57 37.47 38.63 37.6 C 38.69 37.73 38.74 37.86 38.78 37.99 C 38.83 38.12 38.86 38.25 38.89 38.38 C 38.91 38.51 38.93 38.64 38.94 38.77 C 38.96 38.9 38.96 39.03 38.96 39.16 C 38.96 39.29 38.95 39.42 38.93 39.56 C 38.92 39.69 38.89 39.83 38.87 39.97 C 38.84 40.1 38.8 40.24 38.76 40.38 C 38.72 40.52 38.67 40.67 38.62 40.81 C 38.56 40.95 38.5 41.1 38.43 41.24 C 38.36 41.39 38.28 41.54 38.2 41.69 C 38.12 41.84 38.03 41.99 37.93 42.13 C 37.83 42.28 37.73 42.43 37.62 42.59 C 37.51 42.74 37.39 42.89 37.27 43.03 C 37.14 43.18 37.01 43.33 36.87 43.48 C 36.73 43.63 36.59 43.78 36.44 43.92 C 36.28 44.07 36.13 44.21 35.96 44.36 C 35.8 44.5 35.62 44.64 35.45 44.78 C 35.27 44.92 35.09 45.02 34.9 45.19 C 34.71 45.36 34.52 45.59 34.31 45.79 C 34.1 46 33.86 46.22 33.63 46.42 C 33.4 46.62 33.16 46.82 32.93 47.02 C 32.69 47.21 32.45 47.4 32.2 47.58 C 31.96 47.77 31.71 47.95 31.45 48.12 C 31.2 48.3 30.94 48.47 30.68 48.63 C 30.42 48.8 30.16 48.96 29.89 49.11 C 29.62 49.27 29.35 49.42 29.07 49.56 C 28.79 49.71 28.51 49.84 28.23 49.98 C 27.94 50.11 27.65 50.24 27.36 50.36 C 27.07 50.49 26.77 50.6 26.47 50.72 C 26.17 50.83 25.86 50.94 25.55 51.04 C 25.24 51.14 24.92 51.23 24.6 51.32 C 24.28 51.41 23.96 51.49 23.63 51.57 C 23.3 51.65 22.97 51.72 22.63 51.79 C 22.29 51.85 21.95 51.91 21.61 51.97 C 21.26 52.02 20.91 52.07 20.55 52.11 C 20.19 52.15 19.83 52.19 19.47 52.22 C 19.1 52.25 18.73 52.28 18.35 52.3 C 17.97 52.33 17.59 52.33 17.2 52.37 C 16.81 52.4 16.2 52.48 16 52.5 Z" fill="#fffaf0" stroke="#fffaf0" stroke-width="2.4" stroke-linejoin="round"></path>
+    <path d="M 6 43.5 C 6.5 43.74 7.97 44.57 8.99 44.96 C 10 45.36 11.05 45.63 12.09 45.88 C 13.13 46.13 14.18 46.32 15.23 46.47 C 16.28 46.61 17.33 46.71 18.38 46.76 C 19.43 46.82 20.48 46.83 21.53 46.8 C 22.57 46.77 23.62 46.69 24.66 46.59 C 25.7 46.48 26.74 46.33 27.77 46.15 C 28.8 45.98 29.82 45.76 30.84 45.52 C 31.85 45.28 32.86 45.01 33.86 44.71 C 34.86 44.41 35.86 44.09 36.84 43.74 C 37.82 43.4 38.79 43.03 39.75 42.64 C 40.72 42.25 41.68 41.84 42.61 41.42 C 43.54 41 44.45 40.57 45.32 40.12 C 46.19 39.68 47.02 39.22 47.84 38.74 C 48.66 38.25 49.46 37.75 50.23 37.22 C 51.01 36.69 51.76 36.14 52.48 35.57 C 53.21 35 53.91 34.41 54.59 33.79 C 55.26 33.18 55.91 32.54 56.53 31.88 C 57.15 31.22 57.75 30.55 58.3 29.84 C 58.84 29.13 59.39 28.4 59.82 27.62 C 60.24 26.84 60.54 25.98 60.84 25.15 C 61.13 24.31 61.39 23.46 61.59 22.6 C 61.79 21.75 61.94 20.87 62.04 20 C 62.14 19.13 62.19 18.26 62.17 17.36 C 62.16 16.47 62.09 15.5 61.95 14.64 C 61.82 13.78 61.61 12.97 61.36 12.19 C 61.1 11.4 60.79 10.64 60.43 9.93 C 60.07 9.22 59.65 8.54 59.19 7.91 C 58.74 7.28 58.24 6.69 57.7 6.15 C 57.17 5.61 56.59 5.12 56 4.69 C 55.4 4.25 54.77 3.86 54.12 3.53 C 53.48 3.19 52.8 2.91 52.13 2.68 C 51.45 2.45 50.75 2.27 50.05 2.14 C 49.34 2.02 48.63 1.94 47.92 1.92 C 47.21 1.9 46.49 1.93 45.78 2 C 45.07 2.08 44.36 2.21 43.66 2.39 C 42.97 2.57 42.23 2.82 41.6 3.08 C 40.96 3.35 40.39 3.64 39.85 3.96 C 39.31 4.29 38.81 4.65 38.36 5.03 C 37.9 5.42 37.48 5.84 37.12 6.27 C 36.75 6.71 36.42 7.18 36.15 7.66 C 35.87 8.13 35.64 8.63 35.46 9.14 C 35.29 9.64 35.16 10.17 35.09 10.68 C 35.01 11.2 34.99 11.73 35.02 12.24 C 35.06 12.75 35.14 13.26 35.28 13.75 C 35.41 14.24 35.6 14.71 35.83 15.16 C 36.07 15.6 36.35 16.03 36.67 16.42 C 36.99 16.8 37.36 17.16 37.75 17.48 C 38.15 17.8 38.59 18.09 39.04 18.33 C 39.48 18.57 40.01 18.77 40.42 18.9 C 40.83 19.03 41.17 19.06 41.53 19.1 C 41.89 19.13 42.24 19.14 42.59 19.11 C 42.93 19.09 43.26 19.03 43.57 18.95 C 43.88 18.87 44.18 18.76 44.46 18.63 C 44.74 18.51 45 18.35 45.23 18.18 C 45.47 18.01 45.68 17.81 45.87 17.61 C 46.06 17.4 46.22 17.18 46.36 16.95 C 46.49 16.71 46.6 16.47 46.68 16.22 C 46.76 15.98 46.82 15.72 46.84 15.47 C 46.87 15.21 46.87 14.95 46.85 14.7 C 46.82 14.45 46.77 14.19 46.7 13.94 C 46.62 13.69 46.45 13.32 46.4 13.2 C 46.35 13.08 46.41 13.07 46.4 13.2 C 46.39 13.33 46.38 13.73 46.34 13.97 C 46.3 14.2 46.24 14.42 46.16 14.62 C 46.08 14.81 45.99 14.99 45.88 15.15 C 45.77 15.31 45.65 15.44 45.52 15.56 C 45.4 15.68 45.26 15.77 45.12 15.85 C 44.98 15.93 44.83 16 44.69 16.04 C 44.54 16.09 44.39 16.12 44.23 16.14 C 44.08 16.16 43.93 16.16 43.77 16.15 C 43.62 16.14 43.46 16.12 43.3 16.08 C 43.14 16.05 42.98 16 42.82 15.93 C 42.66 15.87 42.5 15.8 42.34 15.7 C 42.17 15.61 42.01 15.52 41.84 15.39 C 41.66 15.26 41.47 15.1 41.3 14.93 C 41.13 14.75 40.95 14.54 40.82 14.35 C 40.7 14.16 40.62 13.98 40.55 13.8 C 40.49 13.62 40.46 13.45 40.45 13.29 C 40.44 13.13 40.45 12.98 40.47 12.84 C 40.5 12.69 40.54 12.56 40.59 12.42 C 40.64 12.29 40.71 12.17 40.79 12.04 C 40.87 11.92 40.96 11.8 41.07 11.69 C 41.17 11.57 41.29 11.46 41.43 11.35 C 41.57 11.24 41.72 11.13 41.89 11.03 C 42.06 10.93 42.24 10.83 42.45 10.75 C 42.66 10.66 42.88 10.58 43.14 10.5 C 43.4 10.43 43.7 10.35 44.03 10.29 C 44.36 10.23 44.77 10.17 45.12 10.16 C 45.47 10.14 45.81 10.15 46.14 10.18 C 46.46 10.22 46.78 10.27 47.07 10.35 C 47.37 10.43 47.65 10.53 47.92 10.64 C 48.18 10.76 48.43 10.89 48.66 11.04 C 48.89 11.19 49.11 11.35 49.3 11.52 C 49.5 11.69 49.68 11.88 49.84 12.08 C 50 12.27 50.14 12.48 50.26 12.69 C 50.39 12.91 50.5 13.13 50.59 13.36 C 50.68 13.6 50.76 13.84 50.82 14.1 C 50.88 14.36 50.93 14.63 50.95 14.92 C 50.98 15.21 50.99 15.52 50.98 15.85 C 50.96 16.18 50.92 16.52 50.86 16.9 C 50.79 17.27 50.71 17.68 50.59 18.08 C 50.48 18.47 50.34 18.87 50.17 19.27 C 50.01 19.67 49.81 20.08 49.59 20.48 C 49.37 20.89 49.08 21.28 48.85 21.72 C 48.61 22.16 48.43 22.65 48.19 23.13 C 47.94 23.62 47.68 24.13 47.38 24.63 C 47.07 25.14 46.73 25.65 46.36 26.16 C 45.99 26.68 45.58 27.2 45.15 27.71 C 44.71 28.22 44.24 28.74 43.74 29.25 C 43.24 29.76 42.71 30.27 42.15 30.77 C 41.59 31.27 41.02 31.75 40.39 32.24 C 39.75 32.74 39.08 33.23 38.35 33.73 C 37.62 34.23 36.81 34.76 36.02 35.26 C 35.24 35.75 34.44 36.23 33.64 36.7 C 32.84 37.16 32.03 37.61 31.21 38.03 C 30.39 38.46 29.56 38.87 28.72 39.25 C 27.88 39.64 27.03 40 26.17 40.34 C 25.31 40.68 24.44 41 23.56 41.29 C 22.68 41.58 21.79 41.84 20.88 42.08 C 19.98 42.31 19.06 42.52 18.13 42.7 C 17.19 42.87 16.24 43.02 15.28 43.14 C 14.31 43.25 13.33 43.33 12.33 43.38 C 11.33 43.43 10.32 43.42 9.26 43.44 C 8.21 43.46 6.54 43.49 6 43.5 Z" fill="#d4a64f"></path>
+    <path d="M 7 50 C 7.26 50.18 8.04 50.79 8.58 51.11 C 9.13 51.43 9.71 51.66 10.28 51.9 C 10.85 52.14 11.44 52.35 12.02 52.54 C 12.61 52.73 13.2 52.89 13.79 53.04 C 14.39 53.19 14.99 53.31 15.59 53.42 C 16.19 53.52 16.79 53.6 17.4 53.67 C 18 53.73 18.61 53.78 19.22 53.8 C 19.82 53.83 20.43 53.83 21.04 53.82 C 21.64 53.81 22.25 53.78 22.86 53.73 C 23.46 53.68 24.06 53.61 24.67 53.52 C 25.27 53.43 25.87 53.33 26.46 53.2 C 27.06 53.08 27.65 52.94 28.24 52.78 C 28.82 52.62 29.41 52.44 29.99 52.25 C 30.57 52.05 31.14 51.84 31.71 51.61 C 32.28 51.38 32.84 51.14 33.4 50.87 C 33.96 50.61 34.52 50.33 35.07 50.02 C 35.61 49.72 36.16 49.39 36.68 49.04 C 37.21 48.7 37.72 48.34 38.21 47.96 C 38.7 47.58 39.19 47.19 39.65 46.78 C 40.1 46.36 40.56 45.94 40.95 45.46 C 41.33 44.98 41.63 44.44 41.93 43.91 C 42.23 43.39 42.51 42.85 42.77 42.3 C 43.02 41.76 43.25 41.2 43.44 40.64 C 43.64 40.07 43.81 39.5 43.95 38.92 C 44.08 38.35 44.19 37.76 44.26 37.17 C 44.33 36.58 44.37 35.99 44.37 35.4 C 44.37 34.8 44.34 34.21 44.27 33.62 C 44.19 33.03 44.08 32.44 43.93 31.86 C 43.78 31.28 43.59 30.7 43.36 30.15 C 43.13 29.59 42.86 29.03 42.56 28.51 C 42.27 27.99 41.93 27.5 41.59 27.04 C 41.24 26.57 40.88 26.14 40.5 25.74 C 40.12 25.34 39.72 24.97 39.3 24.63 C 38.89 24.3 38.46 23.99 38.01 23.72 C 37.57 23.45 37.12 23.21 36.66 23.01 C 36.2 22.8 35.73 22.63 35.26 22.49 C 34.79 22.35 34.32 22.24 33.85 22.16 C 33.37 22.08 32.9 22.04 32.43 22.02 C 31.96 22 31.49 22.01 31.03 22.06 C 30.57 22.1 30.11 22.17 29.67 22.27 C 29.22 22.37 28.78 22.49 28.35 22.65 C 27.93 22.8 27.51 22.99 27.11 23.2 C 26.71 23.41 26.32 23.64 25.95 23.9 C 25.59 24.17 25.23 24.46 24.91 24.77 C 24.58 25.08 24.27 25.41 23.98 25.77 C 23.7 26.13 23.43 26.53 23.21 26.91 C 22.98 27.29 22.8 27.68 22.65 28.05 C 22.5 28.41 22.4 28.75 22.31 29.1 C 22.23 29.45 22.17 29.8 22.14 30.14 C 22.11 30.48 22.11 30.81 22.14 31.13 C 22.16 31.45 22.21 31.76 22.29 32.06 C 22.36 32.36 22.45 32.65 22.57 32.92 C 22.68 33.18 22.82 33.44 22.98 33.68 C 23.13 33.91 23.3 34.13 23.49 34.33 C 23.67 34.53 23.87 34.71 24.08 34.87 C 24.29 35.03 24.52 35.17 24.75 35.28 C 24.98 35.4 25.22 35.49 25.46 35.57 C 25.7 35.64 25.95 35.69 26.2 35.72 C 26.45 35.75 26.71 35.75 26.96 35.74 C 27.21 35.72 27.47 35.68 27.72 35.62 C 27.97 35.56 28.22 35.48 28.47 35.38 C 28.72 35.27 29.08 35.06 29.2 35 C 29.32 34.94 29.33 34.98 29.2 35 C 29.07 35.02 28.66 35.09 28.41 35.1 C 28.15 35.12 27.91 35.11 27.68 35.08 C 27.46 35.05 27.24 35.01 27.04 34.94 C 26.84 34.88 26.66 34.8 26.49 34.71 C 26.32 34.62 26.17 34.52 26.03 34.4 C 25.88 34.29 25.76 34.17 25.65 34.04 C 25.54 33.91 25.44 33.77 25.36 33.63 C 25.28 33.48 25.21 33.34 25.15 33.19 C 25.1 33.03 25.05 32.88 25.03 32.72 C 25 32.57 24.98 32.41 24.98 32.25 C 24.97 32.09 24.98 31.92 25 31.76 C 25.02 31.6 25.06 31.43 25.11 31.27 C 25.15 31.1 25.21 30.94 25.29 30.77 C 25.36 30.6 25.45 30.43 25.55 30.26 C 25.65 30.09 25.76 29.93 25.9 29.75 C 26.04 29.56 26.22 29.34 26.4 29.15 C 26.58 28.96 26.79 28.77 27 28.61 C 27.2 28.44 27.41 28.3 27.63 28.18 C 27.84 28.06 28.07 27.95 28.29 27.86 C 28.52 27.77 28.75 27.7 28.98 27.65 C 29.21 27.59 29.44 27.55 29.67 27.53 C 29.91 27.5 30.14 27.5 30.38 27.5 C 30.61 27.51 30.85 27.53 31.08 27.57 C 31.31 27.6 31.53 27.65 31.76 27.72 C 31.98 27.78 32.2 27.86 32.41 27.95 C 32.63 28.04 32.84 28.15 33.04 28.27 C 33.24 28.38 33.43 28.51 33.61 28.66 C 33.8 28.8 33.98 28.95 34.15 29.12 C 34.31 29.29 34.47 29.47 34.62 29.66 C 34.77 29.85 34.92 30.05 35.05 30.27 C 35.18 30.49 35.29 30.7 35.41 30.96 C 35.54 31.23 35.7 31.57 35.8 31.85 C 35.9 32.13 35.96 32.37 36 32.63 C 36.05 32.89 36.08 33.13 36.09 33.38 C 36.1 33.63 36.09 33.87 36.07 34.12 C 36.05 34.36 36.01 34.6 35.96 34.85 C 35.9 35.1 35.83 35.34 35.75 35.59 C 35.67 35.84 35.57 36.09 35.45 36.34 C 35.34 36.59 35.2 36.85 35.06 37.1 C 34.91 37.36 34.74 37.62 34.56 37.87 C 34.38 38.13 34.19 38.39 33.97 38.64 C 33.76 38.9 33.5 39.13 33.28 39.41 C 33.07 39.68 32.89 40 32.67 40.31 C 32.46 40.62 32.23 40.94 31.98 41.25 C 31.73 41.56 31.47 41.88 31.18 42.18 C 30.89 42.49 30.59 42.79 30.27 43.09 C 29.94 43.39 29.59 43.69 29.23 43.98 C 28.87 44.27 28.5 44.55 28.12 44.83 C 27.73 45.1 27.34 45.37 26.94 45.63 C 26.54 45.88 26.13 46.13 25.71 46.37 C 25.3 46.6 24.87 46.83 24.43 47.04 C 24 47.26 23.55 47.47 23.1 47.66 C 22.65 47.85 22.19 48.04 21.72 48.21 C 21.25 48.38 20.77 48.54 20.28 48.69 C 19.8 48.84 19.3 48.97 18.8 49.1 C 18.3 49.22 17.79 49.33 17.27 49.43 C 16.75 49.53 16.23 49.61 15.7 49.68 C 15.16 49.75 14.62 49.81 14.07 49.86 C 13.52 49.9 12.97 49.94 12.4 49.96 C 11.84 49.97 11.26 49.98 10.68 49.98 C 10.1 49.97 9.51 49.94 8.9 49.94 C 8.29 49.94 7.32 49.99 7 50 Z" fill="#d4a64f"></path>
+    <path d="M 16 52.5 C 16.18 52.59 16.73 52.88 17.11 53.02 C 17.48 53.17 17.86 53.27 18.24 53.37 C 18.61 53.48 18.99 53.57 19.37 53.65 C 19.75 53.73 20.13 53.8 20.51 53.86 C 20.89 53.92 21.26 53.97 21.64 54.01 C 22.02 54.05 22.4 54.08 22.77 54.11 C 23.15 54.13 23.52 54.14 23.9 54.15 C 24.27 54.15 24.65 54.15 25.02 54.13 C 25.39 54.12 25.76 54.1 26.13 54.07 C 26.5 54.04 26.87 54 27.24 53.95 C 27.61 53.9 27.97 53.84 28.34 53.78 C 28.7 53.71 29.06 53.64 29.42 53.56 C 29.78 53.48 30.14 53.39 30.5 53.29 C 30.86 53.19 31.21 53.08 31.56 52.97 C 31.91 52.86 32.26 52.73 32.61 52.6 C 32.96 52.47 33.3 52.33 33.65 52.19 C 33.99 52.04 34.33 51.89 34.67 51.72 C 35 51.56 35.34 51.39 35.67 51.21 C 36 51.04 36.33 50.85 36.65 50.66 C 36.98 50.47 37.3 50.26 37.62 50.06 C 37.93 49.86 38.26 49.66 38.53 49.45 C 38.79 49.23 39 48.99 39.22 48.76 C 39.44 48.52 39.65 48.28 39.85 48.03 C 40.05 47.79 40.24 47.54 40.42 47.29 C 40.6 47.04 40.78 46.79 40.94 46.54 C 41.11 46.28 41.26 46.02 41.41 45.76 C 41.55 45.5 41.69 45.24 41.81 44.98 C 41.94 44.72 42.05 44.45 42.16 44.19 C 42.26 43.92 42.36 43.65 42.44 43.38 C 42.52 43.11 42.6 42.85 42.66 42.58 C 42.72 42.31 42.77 42.04 42.81 41.77 C 42.85 41.5 42.88 41.23 42.89 40.96 C 42.91 40.69 42.91 40.42 42.9 40.15 C 42.89 39.89 42.87 39.62 42.83 39.36 C 42.8 39.1 42.75 38.84 42.69 38.58 C 42.62 38.33 42.55 38.08 42.46 37.83 C 42.37 37.58 42.27 37.34 42.16 37.11 C 42.04 36.87 41.91 36.64 41.77 36.42 C 41.63 36.2 41.48 35.99 41.31 35.79 C 41.15 35.58 40.97 35.39 40.78 35.2 C 40.59 35.01 40.38 34.82 40.18 34.67 C 39.99 34.51 39.8 34.38 39.62 34.27 C 39.43 34.15 39.26 34.06 39.08 33.98 C 38.9 33.89 38.72 33.81 38.54 33.75 C 38.36 33.69 38.18 33.64 38 33.6 C 37.82 33.55 37.65 33.52 37.47 33.51 C 37.3 33.49 37.12 33.48 36.96 33.48 C 36.79 33.48 36.62 33.49 36.46 33.51 C 36.3 33.54 36.14 33.57 35.99 33.61 C 35.84 33.65 35.69 33.7 35.55 33.75 C 35.41 33.81 35.27 33.88 35.15 33.95 C 35.02 34.02 34.9 34.1 34.78 34.19 C 34.67 34.27 34.56 34.37 34.46 34.47 C 34.37 34.56 34.28 34.67 34.2 34.78 C 34.11 34.89 34.04 35 33.98 35.12 C 33.91 35.24 33.86 35.36 33.81 35.48 C 33.77 35.6 33.73 35.73 33.71 35.86 C 33.68 35.98 33.66 36.11 33.65 36.24 C 33.65 36.37 33.65 36.5 33.66 36.63 C 33.67 36.76 33.69 36.89 33.72 37.02 C 33.75 37.16 33.78 37.29 33.83 37.41 C 33.88 37.54 33.97 37.74 34 37.8 C 34.03 37.86 34 37.87 34 37.8 C 34 37.73 33.99 37.52 33.99 37.39 C 34 37.26 34.01 37.13 34.04 37.02 C 34.06 36.9 34.09 36.79 34.12 36.68 C 34.16 36.58 34.2 36.48 34.25 36.39 C 34.3 36.31 34.35 36.22 34.41 36.15 C 34.46 36.07 34.53 36 34.59 35.94 C 34.66 35.88 34.72 35.82 34.79 35.77 C 34.86 35.72 34.94 35.68 35.01 35.64 C 35.08 35.61 35.16 35.57 35.24 35.55 C 35.31 35.52 35.39 35.5 35.47 35.49 C 35.55 35.47 35.63 35.46 35.71 35.45 C 35.79 35.45 35.87 35.45 35.95 35.45 C 36.03 35.46 36.12 35.47 36.2 35.48 C 36.28 35.49 36.36 35.51 36.44 35.54 C 36.52 35.56 36.61 35.59 36.69 35.62 C 36.77 35.65 36.85 35.69 36.93 35.74 C 37.01 35.78 37.09 35.83 37.17 35.88 C 37.25 35.93 37.33 35.99 37.41 36.06 C 37.49 36.12 37.57 36.19 37.64 36.26 C 37.72 36.34 37.79 36.42 37.88 36.51 C 37.96 36.6 38.05 36.71 38.14 36.83 C 38.23 36.94 38.34 37.09 38.42 37.21 C 38.5 37.34 38.57 37.47 38.63 37.6 C 38.69 37.73 38.74 37.86 38.78 37.99 C 38.83 38.12 38.86 38.25 38.89 38.38 C 38.91 38.51 38.93 38.64 38.94 38.77 C 38.96 38.9 38.96 39.03 38.96 39.16 C 38.96 39.29 38.95 39.42 38.93 39.56 C 38.92 39.69 38.89 39.83 38.87 39.97 C 38.84 40.1 38.8 40.24 38.76 40.38 C 38.72 40.52 38.67 40.67 38.62 40.81 C 38.56 40.95 38.5 41.1 38.43 41.24 C 38.36 41.39 38.28 41.54 38.2 41.69 C 38.12 41.84 38.03 41.99 37.93 42.13 C 37.83 42.28 37.73 42.43 37.62 42.59 C 37.51 42.74 37.39 42.89 37.27 43.03 C 37.14 43.18 37.01 43.33 36.87 43.48 C 36.73 43.63 36.59 43.78 36.44 43.92 C 36.28 44.07 36.13 44.21 35.96 44.36 C 35.8 44.5 35.62 44.64 35.45 44.78 C 35.27 44.92 35.09 45.02 34.9 45.19 C 34.71 45.36 34.52 45.59 34.31 45.79 C 34.1 46 33.86 46.22 33.63 46.42 C 33.4 46.62 33.16 46.82 32.93 47.02 C 32.69 47.21 32.45 47.4 32.2 47.58 C 31.96 47.77 31.71 47.95 31.45 48.12 C 31.2 48.3 30.94 48.47 30.68 48.63 C 30.42 48.8 30.16 48.96 29.89 49.11 C 29.62 49.27 29.35 49.42 29.07 49.56 C 28.79 49.71 28.51 49.84 28.23 49.98 C 27.94 50.11 27.65 50.24 27.36 50.36 C 27.07 50.49 26.77 50.6 26.47 50.72 C 26.17 50.83 25.86 50.94 25.55 51.04 C 25.24 51.14 24.92 51.23 24.6 51.32 C 24.28 51.41 23.96 51.49 23.63 51.57 C 23.3 51.65 22.97 51.72 22.63 51.79 C 22.29 51.85 21.95 51.91 21.61 51.97 C 21.26 52.02 20.91 52.07 20.55 52.11 C 20.19 52.15 19.83 52.19 19.47 52.22 C 19.1 52.25 18.73 52.28 18.35 52.3 C 17.97 52.33 17.59 52.33 17.2 52.37 C 16.81 52.4 16.2 52.48 16 52.5 Z" fill="#d4a64f"></path>
+    <path d="M 24.72 46.87 C 25.23 46.75 26.76 46.41 27.76 46.14 C 28.77 45.87 29.76 45.56 30.74 45.23 C 31.72 44.9 32.69 44.54 33.64 44.16 C 34.6 43.78 35.55 43.37 36.48 42.95 C 37.41 42.53 38.33 42.08 39.24 41.62 C 40.15 41.17 41.06 40.68 41.93 40.2 C 42.8 39.72 43.65 39.23 44.45 38.73 C 45.25 38.23 46 37.72 46.74 37.19 C 47.48 36.67 48.19 36.12 48.88 35.56 C 49.57 35 50.23 34.42 50.86 33.83 C 51.49 33.24 52.1 32.64 52.67 32.02 C 53.25 31.4 53.79 30.77 54.3 30.12 C 54.82 29.48 55.3 28.82 55.74 28.14 C 56.19 27.47 56.6 26.79 56.97 26.09 C 57.35 25.39 57.69 24.68 57.99 23.97 C 58.28 23.25 58.54 22.52 58.76 21.78 C 58.97 21.04 59.15 20.29 59.27 19.54 C 59.4 18.78 59.48 18.02 59.51 17.25 C 59.54 16.48 59.52 15.66 59.45 14.92 C 59.37 14.17 59.24 13.47 59.06 12.79 C 58.88 12.11 58.65 11.45 58.37 10.82 C 58.1 10.19 57.78 9.59 57.43 9.03 C 57.07 8.46 56.67 7.93 56.24 7.44 C 55.8 6.95 55.33 6.49 54.84 6.08 C 54.34 5.66 53.81 5.29 53.26 4.96 C 52.71 4.62 52.13 4.33 51.54 4.09 C 50.95 3.84 50.33 3.64 49.71 3.48 C 49.09 3.33 48.44 3.22 47.8 3.15 C 47.15 3.09 46.49 3.07 45.83 3.1 C 45.17 3.13 44.5 3.2 43.84 3.33 C 43.18 3.45 42.47 3.64 41.85 3.85 C 41.24 4.05 40.68 4.29 40.15 4.55 C 39.61 4.82 39.12 5.12 38.66 5.45 C 38.2 5.78 37.59 6.35 37.38 6.53 " fill="none" stroke="#fffaf0" stroke-opacity="0.95" stroke-width="1.2" stroke-linecap="round"></path>
+    <path d="M 51.66 25.43 C 51.83 25.16 52.36 24.33 52.66 23.77 C 52.96 23.21 53.23 22.65 53.46 22.09 C 53.69 21.53 53.89 20.96 54.06 20.4 C 54.22 19.84 54.35 19.28 54.44 18.72 C 54.54 18.16 54.6 17.6 54.62 17.05 C 54.64 16.51 54.63 15.95 54.58 15.45 C 54.53 14.95 54.43 14.49 54.32 14.04 C 54.2 13.59 54.05 13.17 53.88 12.77 C 53.71 12.38 53.51 12 53.29 11.65 C 53.07 11.3 52.82 10.98 52.56 10.68 C 52.29 10.37 52 10.09 51.7 9.84 C 51.39 9.59 51.07 9.36 50.73 9.15 C 50.39 8.95 50.04 8.77 49.67 8.62 C 49.3 8.46 48.91 8.34 48.52 8.24 C 48.13 8.14 47.72 8.07 47.31 8.03 C 46.89 7.99 46.47 7.97 46.04 7.99 C 45.62 8.01 45.18 8.06 44.74 8.14 C 44.31 8.23 43.82 8.36 43.42 8.49 C 43.02 8.62 42.67 8.77 42.35 8.93 C 42.03 9.09 41.76 9.26 41.51 9.43 C 41.26 9.61 41.04 9.8 40.85 10 C 40.65 10.19 40.49 10.39 40.35 10.59 C 40.2 10.79 40.09 11 40 11.2 C 39.9 11.4 39.84 11.61 39.79 11.8 C 39.74 12 39.71 12.2 39.71 12.4 C 39.7 12.59 39.71 12.78 39.75 12.96 C 39.78 13.15 39.83 13.33 39.9 13.51 C 39.98 13.69 40.07 13.87 40.19 14.05 C 40.31 14.22 40.45 14.39 40.62 14.56 C 40.79 14.73 41.12 14.97 41.22 15.05 " fill="none" stroke="#fffaf0" stroke-opacity="0.95" stroke-width="1.2" stroke-linecap="round"></path>
+    <path d="M 19.21 53.74 C 19.51 53.71 20.41 53.62 21 53.53 C 21.59 53.44 22.17 53.34 22.75 53.22 C 23.33 53.1 23.91 52.96 24.48 52.81 C 25.05 52.66 25.61 52.49 26.17 52.31 C 26.72 52.13 27.27 51.93 27.82 51.71 C 28.36 51.5 28.9 51.27 29.43 51.03 C 29.96 50.78 30.48 50.52 30.99 50.25 C 31.5 49.98 32.01 49.7 32.51 49.39 C 33 49.09 33.5 48.78 33.98 48.45 C 34.45 48.11 34.92 47.77 35.37 47.41 C 35.82 47.05 36.25 46.68 36.66 46.29 C 37.07 45.91 37.47 45.51 37.85 45.11 C 38.22 44.7 38.58 44.28 38.92 43.86 C 39.26 43.43 39.57 42.99 39.87 42.55 C 40.16 42.1 40.44 41.64 40.69 41.18 C 40.94 40.72 41.17 40.24 41.37 39.76 C 41.57 39.28 41.75 38.8 41.9 38.3 C 42.05 37.81 42.17 37.31 42.27 36.8 C 42.36 36.3 42.43 35.79 42.46 35.27 C 42.49 34.76 42.49 34.24 42.46 33.73 C 42.43 33.21 42.37 32.69 42.27 32.18 C 42.17 31.67 42.03 31.16 41.86 30.65 C 41.69 30.15 41.48 29.64 41.24 29.16 C 41.01 28.68 40.72 28.2 40.44 27.77 C 40.16 27.33 39.86 26.92 39.54 26.53 C 39.23 26.15 38.89 25.79 38.53 25.46 C 38.18 25.13 37.8 24.83 37.42 24.55 C 37.04 24.28 36.64 24.03 36.23 23.81 C 35.82 23.59 35.4 23.4 34.98 23.23 C 34.55 23.07 34.12 22.93 33.68 22.82 C 33.25 22.72 32.8 22.64 32.36 22.58 C 31.92 22.53 31.48 22.51 31.03 22.51 C 30.59 22.51 29.93 22.59 29.71 22.61 " fill="none" stroke="#fffaf0" stroke-opacity="0.95" stroke-width="1.2" stroke-linecap="round"></path>
+    <path d="M 37.35 39.38 C 37.43 39.19 37.71 38.65 37.87 38.29 C 38.02 37.92 38.15 37.56 38.26 37.2 C 38.37 36.83 38.46 36.47 38.53 36.11 C 38.6 35.75 38.64 35.38 38.67 35.03 C 38.69 34.67 38.69 34.31 38.67 33.96 C 38.65 33.61 38.6 33.25 38.54 32.91 C 38.47 32.56 38.38 32.21 38.26 31.87 C 38.14 31.52 38.01 31.19 37.84 30.84 C 37.67 30.5 37.44 30.12 37.23 29.81 C 37.03 29.49 36.84 29.22 36.62 28.96 C 36.41 28.7 36.18 28.46 35.94 28.24 C 35.71 28.02 35.46 27.82 35.21 27.64 C 34.95 27.46 34.69 27.3 34.43 27.15 C 34.16 27.01 33.89 26.88 33.61 26.78 C 33.33 26.67 33.05 26.58 32.77 26.51 C 32.49 26.44 32.2 26.39 31.92 26.36 C 31.63 26.32 31.35 26.31 31.07 26.31 C 30.78 26.31 30.5 26.33 30.22 26.37 C 29.95 26.41 29.67 26.46 29.41 26.54 C 29.14 26.61 28.88 26.7 28.62 26.8 C 28.37 26.91 28.12 27.03 27.89 27.18 C 27.65 27.32 27.42 27.47 27.2 27.65 C 26.99 27.82 26.78 28.01 26.58 28.22 C 26.39 28.43 26.19 28.66 26.03 28.89 C 25.87 29.12 25.72 29.38 25.6 29.59 C 25.49 29.81 25.39 30.09 25.34 30.19 " fill="none" stroke="#fffaf0" stroke-opacity="0.95" stroke-width="1.2" stroke-linecap="round"></path>
+    <path d="M 25.02 54.11 C 25.2 54.08 25.75 54 26.11 53.93 C 26.47 53.86 26.82 53.78 27.18 53.69 C 27.53 53.61 27.89 53.52 28.23 53.42 C 28.58 53.32 28.93 53.21 29.27 53.1 C 29.61 52.98 29.95 52.86 30.29 52.73 C 30.62 52.6 30.95 52.47 31.28 52.33 C 31.61 52.18 31.94 52.03 32.26 51.88 C 32.58 51.72 32.9 51.56 33.22 51.39 C 33.53 51.22 33.84 51.04 34.15 50.86 C 34.46 50.67 34.76 50.48 35.06 50.29 C 35.36 50.09 35.66 49.89 35.95 49.68 C 36.25 49.47 36.54 49.25 36.82 49.03 C 37.1 48.82 37.38 48.59 37.62 48.39 C 37.87 48.18 38.08 47.99 38.29 47.78 C 38.51 47.58 38.72 47.37 38.92 47.16 C 39.12 46.95 39.31 46.73 39.5 46.51 C 39.68 46.29 39.86 46.07 40.03 45.85 C 40.19 45.63 40.35 45.4 40.5 45.17 C 40.65 44.94 40.8 44.71 40.93 44.48 C 41.06 44.24 41.19 44.01 41.3 43.77 C 41.42 43.53 41.52 43.3 41.62 43.06 C 41.72 42.82 41.8 42.57 41.88 42.33 C 41.96 42.09 42.02 41.84 42.08 41.6 C 42.13 41.35 42.18 41.11 42.21 40.86 C 42.25 40.62 42.27 40.37 42.28 40.12 C 42.29 39.88 42.29 39.63 42.28 39.39 C 42.27 39.14 42.24 38.9 42.21 38.66 C 42.17 38.42 42.12 38.18 42.06 37.94 C 41.99 37.7 41.92 37.47 41.83 37.24 C 41.74 37.01 41.63 36.78 41.52 36.56 C 41.4 36.34 41.19 36.02 41.13 35.91 " fill="none" stroke="#fffaf0" stroke-opacity="0.95" stroke-width="1.2" stroke-linecap="round"></path>
+  </g></svg></span>Goldy walkthrough</span></div>
+  <h1>Interactive graph: collapsible bubbles and a flowing spine</h1>
+  <p class="intro">A UI rework of the report. Every node became a collapsible circular bubble that morphs open, the spine flows in the node&#x27;s own colour on hover, and the report grew a per-conversation history with a master index.</p>
+  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-29 01:27</span></div>
+  <div class='detail-ctl'><span class='dc-lead'>Detail level</span><div class='dc-seg' role='group' aria-label='Detail level'><button type='button' class='dc-btn' data-level='essentials' title='Only the key requests and decisions.'>Essentials</button><button type='button' class='dc-btn active' data-level='standard' title='Key steps plus the actions that carried them out.'>Standard</button><button type='button' class='dc-btn' data-level='everything' title='Every node, including minor and supporting steps.'>Everything</button></div><span class='dc-count'></span></div>
+  <div class="filters">
+    <span class="filters-lead">Filter by type</span>
+    <div class="head-chips"><button type='button' class='chip h-chip h-toggle k-decision' data-kind='decision' aria-pressed='true' title='Click to hide or show decisions'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg><span class='h-n'>3</span> decisions</button><button type='button' class='chip h-chip h-toggle k-principle' data-kind='principle' aria-pressed='true' title='Click to hide or show principles'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg><span class='h-n'>1</span> principles</button><button type='button' class='chip h-chip h-toggle k-action' data-kind='action' aria-pressed='true' title='Click to hide or show actions'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg><span class='h-n'>1</span> actions</button><button type='button' class='chip h-chip h-toggle k-prompt' data-kind='prompt' aria-pressed='true' title='Click to hide or show requests'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.2l1.5 4.3 4.3 1.5-4.3 1.5L8 13.8 6.5 9.5 2.2 8l4.3-1.5z"/></svg><span class='h-n'>1</span> requests</button></div>
+  </div>
+  <div class='graph-tools'><button type='button' class='gt-btn' data-act='expand'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.5 6.5L8 4l2.5 2.5M5.5 9.5L8 12l2.5-2.5"/></svg>Expand all</button><button type='button' class='gt-btn' data-act='collapse'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.5 4.5L8 7l2.5-2.5M5.5 11.5L8 9l2.5 2.5"/></svg>Collapse all</button></div>
+  <div class="how">
+    <span class="how-lead">How to read this</span>
+    <span class="how-step"><b>1</b> Scroll the cards top to bottom: each is one step Claude took.</span>
+    <span class="how-step"><b>2</b> Cards start folded: click a card's <em>header</em> to open it, or use <em>Expand all</em>.</span>
+    <span class="how-step"><b>3</b> Open <em>What ran</em> and <em>Learn more</em> for the command, reasoning and sources.</span>
+    <span class="how-step"><b>4</b> Set the <em>detail level</em> to hide minor steps, or click a <em>type chip</em> above to hide that kind.</span>
+  </div>
+</header>
+<main class="graph" data-detail="standard">
+
+    <div class="node collapsed k-prompt" data-kind="prompt" data-prio="high" data-rank="3" style="--i:0">
+      <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.2l1.5 4.3 4.3 1.5-4.3 1.5L8 13.8 6.5 9.5 2.2 8l4.3-1.5z"/></svg></div>
+      <div class="card">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.2l1.5 4.3 4.3 1.5-4.3 1.5L8 13.8 6.5 9.5 2.2 8l4.3-1.5z"/></svg></span>
+          <div class="ch-text">
+            <h3 class="node-title">Make the report&#x27;s nodes interactive bubbles</h3>
+            <div class="chips"><span class='chip k-prompt'>Request</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span></div>
+          </div>
+          <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
+        </div>
+        <div class="card-body"><div class="cb-inner">
+        <div class='node-summary'><p>Rework the graph so nodes are circular bubbles with big icons that expand on click, with hover animations, a priority staircase, and connecting narration between steps.</p></div><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>A wall of open cards is hard to scan. Folding each step into a labelled bubble turns the report into a navigable map you choose to open.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more </summary><div class='mat-wrap'><div class='mat-empty'>No external references attached to this step.</div></div></details>
+        </div></div>
+      </div>
+      <div class="bridge" data-transition="The first move was to decide what a folded node should look like."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">The first move was to decide what a folded node should look like.</span></div>
+    </div>
+
+    <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:1">
+      <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></div>
+      <div class="card">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></span>
+          <div class="ch-text">
+            <h3 class="node-title">Collapse each node into a morphing graph bubble</h3>
+            <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span></div>
+          </div>
+          <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
+        </div>
+        <div class="card-body"><div class="cb-inner">
+        <div class='node-summary'><p>Each node starts as a big kind-coloured icon face with its title beside it, and clicking morphs it into the full card.</p></div><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>Animating border-radius, fill and padding on a single element (rather than swapping two elements) keeps the open and closed states reading as one object resizing, with no layout jump.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more <span class='mat-count'>1</span></summary><div class='mat-wrap'><div class='mat-link mat-card'><a class='mat-open' href='https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_transitions/Using_CSS_transitions' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg></span><span class='mat-body'><span class='mat-title'>Using CSS transitions (MDN)<span class='mat-kind mk-lang'>language</span></span><span class='mat-host'>developer.mozilla.org</span><span class=mat-note><p>The transition model behind the morph from bubble to card.</p></span></span></a></div></div></details>
+        </div></div>
+      </div>
+      <div class="bridge" data-transition="Showing the bubble raised the question of how it sits on the spine."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Showing the bubble raised the question of how it sits on the spine.</span></div>
+    </div>
+
+    <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:2">
+      <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg></div>
+      <div class="card">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg></span>
+          <div class="ch-text">
+            <h3 class="node-title">One marker, drawn in front of the lines</h3>
+            <div class="chips"><span class='chip k-principle'>Principle</span></div>
+          </div>
+          <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
+        </div>
+        <div class="card-body"><div class="cb-inner">
+        <div class='node-summary'><p>The kind icon is the only marker in both states; the separate spine bead was removed, and the bubble is lifted above the connecting lines.</p></div><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>Two circles (a bead plus a badge) read as clutter and an accidental duplicate when a card opened. Collapsing to one marker, with the spine tucked behind it via z-index, makes the graph legible.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Sources & principles <span class='mat-count'>1</span></summary><div class='mat-wrap'><div class='mat-link mat-card'><a class='mat-open' href='https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Stacking_context' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 2.2h6V14l-3-2.4L5 14z"/></svg></span><span class='mat-body'><span class='mat-title'>CSS stacking and z-index (MDN)<span class='mat-kind mk-ref'>reference</span></span><span class='mat-host'>developer.mozilla.org</span><span class=mat-note><p>Why the bubble needs its own stacking context to sit above the pseudo-element lines.</p></span></span></a></div></div></details>
+        </div></div>
+      </div>
+      <div class="bridge" data-transition="With the shape settled, the connecting lines could be brought to life."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">With the shape settled, the connecting lines could be brought to life.</span></div>
+    </div>
+
+    <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:3">
+      <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
+      <div class="card">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></span>
+          <div class="ch-text">
+            <h3 class="node-title">Restyle the collapsed state in render.py</h3>
+            <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M10.5 2.8l2.7 2.7-7.4 7.4-3.3.6.6-3.3z"/><path d="M9.2 4.1l2.7 2.7"/></svg>Edit</span><span class='chip c-lang'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg>Python</span><span class='chip c-minor'>detail</span></div>
+          </div>
+          <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
+        </div>
+        <div class="card-body"><div class="cb-inner">
+        <div class='node-summary'><p>Edited the renderer&#x27;s CSS so the collapsed card sheds its chrome and the icon swells to a 58px face.</p></div><details class='drawer code-drawer'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg> <span class='dw-label'>What ran</span><svg class='ic chev' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></summary><div class='emb'><div class='emb-head'><span class='emb-lang'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg> Python</span><span class='emb-path' title='skills/goldy/scripts/render.py'>…/skills/goldy/scripts/render.py</span></div><div class='cmd emb-code'>.<span class='tok t-name' tabindex='0'>node<span class='tip'><span class='tip-d'>Attribute or method accessed on the preceding value.</span></span></span>.<span class='tok t-name' tabindex='0'>collapsed<span class='tip'><span class='tip-d'>Attribute or method accessed on the preceding value.</span></span></span> .<span class='tok t-name' tabindex='0'>card<span class='tip'><span class='tip-d'>Attribute or method accessed on the preceding value.</span></span></span>{<span class='tok t-name' tabindex='0'>background<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>:<span class='tok t-name' tabindex='0'>transparent<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>;<span class='tok t-name' tabindex='0'>border<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>:<span class='tok t-name' tabindex='0'>none<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>;<span class='tok t-name' tabindex='0'>box<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>-<span class='tok t-name' tabindex='0'>shadow<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>:<span class='tok t-name' tabindex='0'>none<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>;<span class='tok t-name' tabindex='0'>padding<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>:4<span class='tok t-name' tabindex='0'>px<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span> <span class='tok t-num' tabindex='0'>0<span class='tip'><span class='tip-d'>A numeric literal.</span></span></span>}
+.<span class='tok t-name' tabindex='0'>node<span class='tip'><span class='tip-d'>Attribute or method accessed on the preceding value.</span></span></span>.<span class='tok t-name' tabindex='0'>collapsed<span class='tip'><span class='tip-d'>Attribute or method accessed on the preceding value.</span></span></span> .<span class='tok t-name' tabindex='0'>node<span class='tip'><span class='tip-d'>Attribute or method accessed on the preceding value.</span></span></span>-<span class='tok t-name' tabindex='0'>ico<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>{<span class='tok t-name' tabindex='0'>width<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>:58<span class='tok t-name' tabindex='0'>px<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>;<span class='tok t-name' tabindex='0'>height<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>:58<span class='tok t-name' tabindex='0'>px<span class='tip'><span class='tip-d'>Identifier: a variable, function, attribute or parameter name.</span></span></span>}</div><a class='emb-more' href='https://docs.python.org/3/' target='_blank' rel='noreferrer'>Learn Python syntax ↗</a></div></details><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>All of the report&#x27;s style lives inline in render.py, so the bubble look is a focused set of edits to the collapsed-state rules.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more </summary><div class='mat-wrap'><div class='mat-empty'>No external references attached to this step.</div></div></details>
+        </div></div>
+      </div>
+      <div class="bridge" data-transition="Hovering then needed to feel alive, not static."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Hovering then needed to feel alive, not static.</span></div>
+    </div>
+
+    <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:4">
+      <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></div>
+      <div class="card">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></span>
+          <div class="ch-text">
+            <h3 class="node-title">Light the spine with a flowing current on hover</h3>
+            <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span></div>
+          </div>
+          <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
+        </div>
+        <div class="card-body"><div class="cb-inner">
+        <div class='node-summary'><p>Hovering a bubble lights its connector and spine segment in the bubble&#x27;s own colour, with a brighter band flowing toward the next node.</p></div><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>A moving gradient reads as live current passing from one step to the next, reinforcing that the graph is a story you follow top to bottom.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more <span class='mat-count'>1</span></summary><div class='mat-wrap'><div class='mat-link mat-card'><a class='mat-open' href='https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations/Using_CSS_animations' target='_blank' rel='noreferrer'><span class='mat-fav'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg></span><span class='mat-body'><span class='mat-title'>Using CSS animations (MDN)<span class='mat-kind mk-lang'>language</span></span><span class='mat-host'>developer.mozilla.org</span><span class=mat-note><p>The keyframe + background-position technique behind the flowing band.</p></span></span></a></div></div></details>
+        </div></div>
+      </div>
+      <div class="bridge" data-transition="Finally, a single repo holds many conversations, so reports needed history."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Finally, a single repo holds many conversations, so reports needed history.</span></div>
+    </div>
+
+    <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:5">
+      <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></div>
+      <div class="card">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></span>
+          <div class="ch-text">
+            <h3 class="node-title">Give each conversation its own report, linked from a master…</h3>
+            <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span></div>
+          </div>
+          <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
+        </div>
+        <div class="card-body"><div class="cb-inner">
+        <div class='node-summary'><p>Reports are written per conversation under .goldy/reports/, and a master index page links to every one, newest first.</p></div><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>A repo accumulates many sessions. Overwriting one file would lose the history, so each session is its own report and a manifest (index.json) drives a hub page that ties them together.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more </summary><div class='mat-wrap'><div class='mat-empty'>No external references attached to this step.</div></div></details>
+        </div></div>
+      </div>
+      <div class="bridge" data-transition="Taken together these changes make the report friendlier to navigate."><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text">Taken together these changes make the report friendlier to navigate.</span></div>
+    </div>
+
+    <div class="node collapsed k-summary" data-kind="summary" data-prio="high" data-rank="3" style="--i:6">
+      <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3.5 2.6h9v10.8h-9z"/><path d="M5.6 5.4h4.8M5.6 8h4.8M5.6 10.6h3"/></svg></div>
+      <div class="card">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3.5 2.6h9v10.8h-9z"/><path d="M5.6 5.4h4.8M5.6 8h4.8M5.6 10.6h3"/></svg></span>
+          <div class="ch-text">
+            <h3 class="node-title">In summary: a friendlier, navigable report</h3>
+            <div class="chips"><span class='chip k-summary'>Summary</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span></div>
+          </div>
+          <span class="node-caret"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span>
+        </div>
+        <div class="card-body"><div class="cb-inner">
+        <div class='node-summary'><p>The rework left the report easier to read and to keep:</p>
+<ul><li><strong>Folded bubbles</strong> that morph open, so you scan first and dive in on demand.</li><li><strong>A living spine</strong> that flows in each step&#x27;s colour on hover.</li><li><strong>A priority staircase</strong> and <strong>story bridges</strong> that show the shape and the narrative at a glance.</li><li><strong>Per-conversation history</strong> with a master index, so a repo&#x27;s sessions accumulate instead of overwriting.</li></ul></div><div class='rationale'><span class='rat-tag'>WHY</span><div class='rat-body'><p>Each change serves the same goal: make a session&#x27;s reasoning quick to navigate and durable to revisit.</p></div></div><details class='drawer materials'><summary><svg class='ic dw-ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/></svg> Learn more </summary><div class='mat-wrap'><div class='mat-empty'>No external references attached to this step.</div></div></details>
+        </div></div>
+      </div>
+      <div class="bridge empty" data-transition=""><span class="br-ic"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6 4l4 4-4 4"/></svg></span><span class="br-text"></span></div>
+    </div>
+</main>
+<footer>Generated by <b>Goldy</b>, keeping you in touch with your codebase.</footer>
+</div><script>
+document.querySelectorAll('.drawer.materials').forEach(d=>{
+  d.addEventListener('toggle',()=>{if(d.open)d.scrollIntoView({behavior:'smooth',block:'nearest'});});
+});
+
+// Detail level: clicking a segment filters nodes by priority and updates the
+// live count. CSS does the hiding from the graph's data-detail attribute.
+(function(){
+  var graph=document.querySelector('.graph');
+  if(!graph)return;
+  var MINRANK={essentials:3,standard:2,everything:1};
+  var btns=document.querySelectorAll('.dc-btn');
+  var toggles=document.querySelectorAll('.h-toggle');
+  var count=document.querySelector('.dc-count');
+  var nodes=[].slice.call(graph.querySelectorAll('.node'));
+  function isVisible(n){return getComputedStyle(n).display!=='none';}
+  function bridgeText(n){var b=n.querySelector('.bridge');return b?b.getAttribute('data-transition'):'';}
+  // each visible node's bridge narrates the path to the next visible node: its own
+  // sentence plus the sentences of every discarded node in between, stitched up.
+  function updateBridges(){
+    for(var i=0;i<nodes.length;i++){
+      var br=nodes[i].querySelector('.bridge');
+      if(!br)continue;
+      if(!isVisible(nodes[i])){br.classList.add('empty');continue;}
+      var parts=[],own=bridgeText(nodes[i]);
+      if(own)parts.push(own);
+      var next=false;
+      for(var j=i+1;j<nodes.length;j++){
+        if(isVisible(nodes[j])){next=true;break;}
+        var t=bridgeText(nodes[j]);if(t)parts.push(t);
+      }
+      var span=br.querySelector('.br-text');
+      if(!next||!parts.length){br.classList.add('empty');if(span)span.textContent='';continue;}
+      if(span)span.textContent=parts.join(' ');
+      br.classList.remove('empty');
+    }
+  }
+  function update(){
+    var min=MINRANK[graph.getAttribute('data-detail')]||1;
+    // each type chip shows how many of its kind survive the current level
+    toggles.forEach(function(b){
+      var k=b.dataset.kind,c=0;
+      nodes.forEach(function(n){
+        if(n.getAttribute('data-kind')===k && +n.getAttribute('data-rank')>=min)c++;
+      });
+      var ns=b.querySelector('.h-n');
+      if(ns)ns.textContent=c;
+      b.classList.toggle('empty',c===0);
+    });
+    if(count){
+      var vis=0;
+      nodes.forEach(function(n){if(getComputedStyle(n).display!=='none')vis++;});
+      count.textContent='showing '+vis+' of '+nodes.length+' steps';
+    }
+    updateBridges();
+  }
+  btns.forEach(function(b){
+    b.addEventListener('click',function(){
+      graph.setAttribute('data-detail',b.dataset.level);
+      btns.forEach(function(x){x.classList.toggle('active',x===b);});
+      update();
+    });
+  });
+  // Type chips: each opts its node kind in or out, composing with the level.
+  document.querySelectorAll('.h-toggle').forEach(function(b){
+    b.addEventListener('click',function(){
+      var off=graph.classList.toggle('hide-'+b.dataset.kind);
+      b.classList.toggle('off',off);
+      b.setAttribute('aria-pressed',off?'false':'true');
+      update();
+    });
+  });
+  update();
+})();
+
+// Per-node fold: a card header is a toggle; the fold-all buttons drive them all.
+(function(){
+  function setNode(node,collapsed){
+    node.classList.toggle('collapsed',collapsed);
+    var h=node.querySelector('.card-head');
+    if(h)h.setAttribute('aria-expanded',collapsed?'false':'true');
+  }
+  document.querySelectorAll('.card-head').forEach(function(h){
+    var node=h.closest('.node');
+    function toggle(){setNode(node,!node.classList.contains('collapsed'));}
+    h.addEventListener('click',toggle);
+    h.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}
+    });
+  });
+  document.querySelectorAll('.gt-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      var collapse=b.dataset.act==='collapse';
+      document.querySelectorAll('.node').forEach(function(n){setNode(n,collapse);});
+    });
+  });
+})();
+</script></body></html>

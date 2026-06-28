@@ -118,13 +118,24 @@ Goldy runs five explicit phases (it learns before it writes):
    sections, and short summaries (preferring your resource library and LabEx).
 4. **Enrich** the nodes with rationale, alternatives, materials, and teaching
    nodes.
-5. **Render** `.goldy/goldy-report.html` and offer to open it.
+5. **Render** this conversation's report into `.goldy/reports/`, then rebuild the
+   master index and offer to open it.
 
-Open it with:
+Open the hub with:
 
 ```bash
 open .goldy/goldy-report.html       # macOS
 ```
+
+### One repo, many conversations
+
+A repo accumulates many sessions, so Goldy keeps a **history**: each conversation
+gets its own report under `.goldy/reports/<id>.html`, and `.goldy/goldy-report.html`
+is a **master index** that links to all of them, newest first. Re-rendering the
+same session overwrites its report rather than adding a duplicate, and each report
+carries an up-arrow back to the index.
+
+![the master index: a card per conversation with its summary, date, step count and kind chips](.goldy/history.png)
 
 ### Run the pipeline by hand
 
@@ -132,11 +143,13 @@ open .goldy/goldy-report.html       # macOS
 SK=~/.claude/skills/goldy/scripts
 python3 $SK/parse_transcript.py --latest -o .goldy/nodes.json
 # ... enrich .goldy/nodes.json (rationale, materials, alternatives, teaching nodes) ...
-python3 $SK/render.py .goldy/nodes.json -o .goldy/goldy-report.html
+python3 $SK/render.py .goldy/nodes.json -o .goldy/reports/<id>.html --register
+python3 $SK/render_index.py .goldy/reports -o .goldy/goldy-report.html
 ```
 
-To document a past session, pass that session's `.jsonl` path instead of
-`--latest`.
+`--register` records the report in `.goldy/reports/index.json`; `render_index.py`
+turns that manifest into the hub. To document a past session, pass that session's
+`.jsonl` path to `parse_transcript.py` instead of `--latest`.
 
 ---
 
@@ -176,24 +189,47 @@ A vertical graph of nodes connected by a colored spine. Node kinds:
 - **Decision** (gold): Claude's reasoning, with a **WHY** block and, where it
   matters, an *Other paths considered* list of alternatives and tradeoffs.
 - **Action** (blue): a tool call (Bash, Edit, Write, ...) with its result.
-- **Principle / Security / Performance** (teal / red / amber): teaching nodes
-  that name the idea behind a choice and link the book, blog, spec or course.
+- **Principle / Security / Performance / Testing / Networking** (teal / red /
+  amber / green / blue): teaching nodes that name the idea behind a choice and
+  link the book, blog, spec or course.
+- **Summary** (neutral): a single closing node that recaps the whole walkthrough
+  as a short lead plus a few bulleted takeaways.
 
 Every node has a *Learn more* drawer with references tagged by kind (reference,
 tutorial, language, spec, book), deep-linked to the exact section, each with an
 optional *Read summary*.
+
+### Reading the graph
+
+The graph is interactive, and made to be read top to bottom like a story:
+
+- **Folded bubbles.** Every node starts collapsed to a big, kind-colored icon
+  bubble with its title beside it. Click a bubble (or *Expand all*) and it morphs
+  open: the icon shrinks to a header badge while the full card grows around it.
+- **Live spine.** Hovering a bubble lights its connector and spine segment in the
+  bubble's own color, with a brighter band flowing toward the next node.
+- **Priority staircase.** Bubbles step right by priority, so the key steps hug the
+  spine and minor ones cascade outward and the shape shows the hierarchy at a glance.
+- **Story bridges.** A one-line transition sits between each pair of bubbles. When
+  you filter nodes out (by **detail level** or **type chip**), the discarded ones'
+  sentences are stitched into the gap so the narrative never breaks.
 
 Commands and code teach you directly:
 
 - hover any shell token (command, **subcommand**, flag, path, redirection like
   `2>`, device files like `/dev/null`, operators) for an explanation plus a
   *read more* link to **explainshell**,
+- a **script** a command runs (`python3 deploy.py`, `./run.sh`, `zsh build.zsh`)
+  is flagged as a script, with a tooltip describing what that script does,
 - hover meaningful output (paths, permissions, exit codes, errors),
 - embedded programs (`python3 -c ...`, heredocs) and written code files (`.py`,
   `.sh`, ...) get their own labeled, syntax-highlighted, hover-annotated panel.
 
-The whole thing is one self-contained HTML file with inline CSS and JS: no build
-step, no dependencies, no network needed to view. And no em dashes, ever.
+A report is one self-contained HTML file with inline CSS and JS: no build step, no
+dependencies, no network needed to view. And no em dashes, ever. By default a report
+omits Goldy's own report-generation steps (running the pipeline scripts, writing to
+`.goldy/`), so documenting a session does not document the act of documenting it;
+pass `--include-self` to `parse_transcript.py` to keep them.
 
 ---
 
@@ -224,7 +260,9 @@ teaching).
 |------|------|
 | `skills/goldy/SKILL.md` | the `/goldy` skill, orchestrates the five-phase pipeline |
 | `skills/goldy/scripts/parse_transcript.py` | transcript → raw nodes |
-| `skills/goldy/scripts/render.py` | nodes → Notion-style HTML |
+| `skills/goldy/scripts/render.py` | nodes → Notion-style HTML (one report per conversation) |
+| `skills/goldy/scripts/render_index.py` | the history manifest → master index page |
+| `skills/goldy/scripts/history.py` | maintains `.goldy/reports/index.json` |
 | `skills/goldy-init/SKILL.md` | first-run wizard that profiles the repo |
 | `skills/goldy-init/scripts/profile.py` | repo scanner + per-project profile (`.goldy/profile.json`) |
 | `skills/goldy-init/scripts/firstrun.sh` | SessionStart hook that fires the wizard once |
@@ -236,13 +274,16 @@ teaching).
 | `agents/goldy-historian.md` | research subagent for bulk material gathering |
 | `install.sh` | symlinks the skills + agent and registers the hook |
 | `.goldy/` | Goldy run on its own build (a live demo: open `goldy-report.html`) |
+| `.goldy/build.sh` | rebuilds the demo: a report per session + the master index |
 
 ### Where Goldy keeps state
 
 | Location | Scope | Holds |
 |----------|-------|-------|
 | `.goldy/profile.json` | per project | the repo profile from `goldy-init` |
-| `.goldy/goldy-report.html` | per project | the generated report |
+| `.goldy/goldy-report.html` | per project | the master index linking every report |
+| `.goldy/reports/<id>.html` | per conversation | one report per Claude Code session |
+| `.goldy/reports/index.json` | per project | the history manifest the index is built from |
 | `~/.claude/goldy/resources.json` | global | your indexed learning resources |
 
 ---

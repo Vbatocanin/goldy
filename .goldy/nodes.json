@@ -13,7 +13,8 @@
     },
     "title": "Building Goldy",
     "summary": "Goldy is a set of Claude Code skills and agents that turn a session into a readable report. This walkthrough traces how it was built, step by step, with the reasoning and sources behind each decision.",
-    "detail": "standard"
+    "detail": "standard",
+    "generated": "2026-06-26T15:42:00"
   },
   "nodes": [
     {
@@ -113,7 +114,7 @@
       "kind": "principle",
       "title": "Progressive disclosure: load only what is needed, when needed",
       "summary": "A skill exposes just its name and description up front; the full instructions and scripts load only when it is actually used.",
-      "rationale": "Goldy follows the same idea internally. The report shows a one-line title and chips first, and tucks the command, result and references into drawers. The reader controls depth instead of drowning in everything at once.",
+      "rationale": "Goldy follows the same idea internally. The report shows a one-line title and chips first, and tucks the command, result and references into drawers. The reader controls how much detail to reveal instead of being shown everything at once.",
       "materials": [
         {
           "title": "Progressive Disclosure (Nielsen Norman Group)",
@@ -363,20 +364,20 @@
       "id": "s2",
       "kind": "security",
       "title": "Least privilege and symlink safety in the installer",
-      "summary": "Transcripts live in a private ~/.claude (mode 0700), and the installer refuses to clobber a real file when linking.",
-      "rationale": "The install step only creates symlinks and bails out if the target exists and is not already a link, which avoids overwriting user data and the classic symlink-swap attack. Goldy reads the private transcript directory but never widens its permissions.",
+      "summary": "The installer only creates symlinks, and never overwrites a real file. Its link() helper skips any destination that already exists and is not a symlink, printing a warning instead of replacing it; otherwise it runs `ln -sfn`, which replaces an existing link in place rather than dereferencing it into a directory.",
+      "rationale": "Skipping an existing non-symlink preserves whatever file the user already has at that path, and the -n (no-dereference) flag prevents writing through a symlink into an unintended directory. The installer's footprint is small by design: it creates only ~/.claude/skills and ~/.claude/agents, symlinks the skills and agent, and adds one SessionStart hook entry to settings.json. Goldy reads the session transcripts under ~/.claude read-only and changes no file permissions.",
       "materials": [
         {
-          "title": "CWE-59: Link Following",
+          "title": "CWE-59: Improper Link Resolution Before File Access (Link Following)",
           "kind": "reference",
           "url": "https://cwe.mitre.org/data/definitions/59.html",
-          "note": "Why an installer must be careful about following or replacing symlinks."
+          "note": "Why an installer must guard against replacing or following a symlink at a write target."
         },
         {
           "title": "Principle of least privilege",
           "kind": "reference",
           "url": "https://en.wikipedia.org/wiki/Principle_of_least_privilege",
-          "note": "The access-control idea behind keeping the transcript directory private."
+          "note": "The access-control principle behind the installer's minimal, symlink-only footprint."
         }
       ],
       "transition": "With the repo laid out safely, the first script could be designed."
@@ -429,33 +430,33 @@
     {
       "id": "o1",
       "kind": "optimization",
-      "title": "Stream the transcript line by line, not all at once",
-      "summary": "The parser reads the JSONL file one line per iteration instead of loading and parsing the whole session into memory.",
-      "rationale": "A long session can be large. Iterating the file object yields one line at a time, so memory stays roughly constant and the work is a single O(n) pass. Tool results are indexed once into a dict for O(1) pairing with their tool calls.",
+      "title": "Linear parsing with O(1) result pairing",
+      "summary": "The parser decodes the JSONL transcript one line at a time, skipping any malformed line, then makes two linear passes over the decoded events: one to index every tool_result by its id, one to emit nodes. Each tool_use is matched to its result through that index.",
+      "rationale": "A tool_use and its tool_result appear in separate turns, so a hash index of results by id makes pairing an average O(1) lookup instead of an O(n^2) scan, keeping the whole parse linear in the number of events. Decoding per line, inside a try/except, means one corrupt line is skipped rather than failing the entire parse. The decoded events are held in memory (O(n)), which is small for a session transcript.",
       "materials": [
         {
-          "title": "Reading files lazily in Python",
-          "kind": "tutorial",
-          "url": "https://realpython.com/python-iterators-iterables/",
-          "note": "Why iterating a file object streams it rather than buffering the whole thing.",
-          "summary": "Iterators produce values one at a time and only when asked, so they let you process data that is large or even unbounded without holding it all in memory. A Python file object is itself an iterator over lines, so looping directly over it reads one line per step. That is exactly how the parser walks a transcript without loading the whole session."
+          "title": "Hash tables (average O(1) lookup)",
+          "kind": "reference",
+          "url": "https://en.wikipedia.org/wiki/Hash_table",
+          "note": "Why indexing tool_result blocks by id makes pairing them with tool_use blocks average O(1).",
+          "summary": "A hash table maps keys to values with average constant-time insertion and lookup, by hashing the key to a bucket. Python's dict is a hash table, so building a dict of tool_result blocks keyed by tool_use_id and then looking each one up while emitting nodes is average O(1) per pair. That turns what would be a quadratic nested scan into a linear pass."
         },
         {
           "title": "Time complexity (Big O)",
           "kind": "reference",
           "url": "https://en.wikipedia.org/wiki/Time_complexity",
-          "note": "Framing the single-pass parse and the O(1) dict lookups.",
-          "summary": "Big O describes how an algorithm's running time grows with input size. A single pass over n lines is O(n), and a hash-map (dict) lookup is on average O(1) regardless of size. Indexing tool results into a dict once and then pairing them by id keeps the parser linear instead of quadratic."
+          "note": "Framing the linear passes and the O(1) dict lookups.",
+          "summary": "Big O describes how an algorithm's running time grows with input size. Two passes over n events is still O(n), and a dict lookup is on average O(1) regardless of size. Indexing tool results once and pairing them by id keeps the parser linear rather than quadratic."
         }
       ],
       "alternatives": [
         {
           "option": "json.load the whole file",
-          "tradeoff": "Simplest to write, but JSONL is not one JSON document, and it would hold the entire session in memory at once."
+          "tradeoff": "Simplest to write, but JSONL is not a single JSON document, so it would not parse; it would also force the entire session into one structure with no per-line error tolerance."
         },
         {
-          "option": "Read all lines into a list first",
-          "tradeoff": "Convenient random access, but defeats the streaming win on large transcripts."
+          "option": "Pair in a single pass with a pending map",
+          "tradeoff": "Buffer each tool_use until its result arrives. It saves one pass, but because results live in later turns it needs its own bookkeeping map, so it trades a second linear pass for added state with no change in O(n)."
         }
       ],
       "transition": "That efficiency reflects a broader stance about where work belongs."
@@ -487,7 +488,7 @@
     {
       "id": "n12",
       "kind": "action",
-      "rationale": "With the JSONL schema already confirmed by hand (the learning step just before), the parser could be written directly against the real shape. It is intentionally dumb: it extracts raw facts and leaves rationale and materials empty, so extraction stays separate from interpretation and each piece is independently testable.",
+      "rationale": "With the JSONL schema already confirmed by hand (the learning step just before), the parser could be written directly against the real shape. It is intentionally minimal: it extracts raw facts and leaves rationale and materials empty, so extraction stays separate from interpretation and each piece is independently testable.",
       "materials": [
         {
           "title": "Python: dictionaries",
@@ -564,7 +565,7 @@
     {
       "id": "n13",
       "kind": "decision",
-      "rationale": "The renderer emits a single self-contained HTML file (inline CSS and JS, no network). That makes a report portable, emailable, committable, viewable offline, and the Notion-like styling (spine graph, chips, drawers, scroll-in animation) is pure CSS so it never breaks.",
+      "rationale": "The renderer emits a single self-contained HTML file (inline CSS and JS, no network). That makes a report portable, emailable, committable, viewable offline, the Notion-like styling (spine graph, chips, drawers, scroll-in animation) is plain CSS, and the only scripting is a small dependency-free layer for the collapsible graph and filters, so a report renders consistently across browsers.",
       "materials": [
         {
           "title": "HTML details and summary disclosure element",
@@ -591,7 +592,7 @@
       "alternatives": [
         {
           "option": "Static-site generator",
-          "tradeoff": "Tools like Eleventy give nice output, but add a build step and dependencies to install and keep current.",
+          "tradeoff": "Tools like Eleventy produce polished output, but add a build step and dependencies to install and keep current.",
           "url": "https://www.11ty.dev/"
         },
         {

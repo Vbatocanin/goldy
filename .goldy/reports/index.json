@@ -1,0 +1,42 @@
+{
+  "reports": [
+    {
+      "id": "interactive-graph",
+      "title": "Interactive graph: collapsible bubbles and a flowing spine",
+      "summary": "A UI rework of the report. Every node became a collapsible circular bubble that morphs open, the spine flows in the node's own colour on hover, and the report grew a per-conversation history with a master index.",
+      "project": "goldy",
+      "session_id": "interactive-graph-rework",
+      "generated": "2026-06-28T21:55:00",
+      "file": "interactive-graph.html",
+      "steps": 7,
+      "counts": {
+        "prompt": 1,
+        "decision": 3,
+        "principle": 1,
+        "action": 1,
+        "summary": 1
+      }
+    },
+    {
+      "id": "building-goldy",
+      "title": "Building Goldy",
+      "summary": "Goldy is a set of Claude Code skills and agents that turn a session into a readable report. This walkthrough traces how it was built, step by step, with the reasoning and sources behind each decision.",
+      "project": "goldy",
+      "session_id": "3779a27f-175e-4422-b374-8ef16ed6b5f0",
+      "generated": "2026-06-26T15:42:00",
+      "file": "building-goldy.html",
+      "steps": 26,
+      "counts": {
+        "prompt": 1,
+        "decision": 5,
+        "action": 8,
+        "principle": 5,
+        "networking": 1,
+        "security": 2,
+        "optimization": 2,
+        "testing": 1,
+        "summary": 1
+      }
+    }
+  ]
+}
