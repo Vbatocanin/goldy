@@ -351,27 +351,27 @@ footer b{color:var(--gold)}
   <span class="eyebrow"><span class="dot"></span>Goldy walkthrough</span>
   <h1>Building Goldy</h1>
   <p class="intro">Goldy is a set of Claude Code skills and agents that turn a session into a readable report. This walkthrough traces how it was built, step by step, with the reasoning and sources behind each decision.</p>
-  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 20:59</span></div>
+  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 21:02</span></div>
   <div class='detail-ctl'><span class='dc-lead'>Detail level</span><div class='dc-seg' role='group' aria-label='Detail level'><button type='button' class='dc-btn' data-level='essentials' title='Only the key requests and decisions.'>Essentials</button><button type='button' class='dc-btn active' data-level='standard' title='Key steps plus the actions that carried them out.'>Standard</button><button type='button' class='dc-btn' data-level='everything' title='Every node, including minor and supporting steps.'>Everything</button></div><span class='dc-count'></span></div>
   <div class="filters">
     <span class="filters-lead">Filter by type</span>
     <div class="head-chips"><button type='button' class='chip h-chip h-toggle k-decision' data-kind='decision' aria-pressed='true' title='Click to hide or show decisions'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg><span class='h-n'>5</span> decisions</button><button type='button' class='chip h-chip h-toggle k-principle' data-kind='principle' aria-pressed='true' title='Click to hide or show principles'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg><span class='h-n'>5</span> principles</button><button type='button' class='chip h-chip h-toggle k-security' data-kind='security' aria-pressed='true' title='Click to hide or show security'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.2l5 1.8v3.6c0 3-2 5.2-5 6.2-3-1-5-3.2-5-6.2V4z"/></svg><span class='h-n'>2</span> security</button><button type='button' class='chip h-chip h-toggle k-optim' data-kind='optimization' aria-pressed='true' title='Click to hide or show performance'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M9 2L4 9h3.2l-1 5 5-7.2H8z"/></svg><span class='h-n'>2</span> performance</button><button type='button' class='chip h-chip h-toggle k-test' data-kind='testing' aria-pressed='true' title='Click to hide or show testing'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6.3 2v6.6l-2.2 3.1a1.4 1.4 0 001.1 2.2h5.6a1.4 1.4 0 001.1-2.2L9.7 8.6V2"/><path d="M5.5 2h5M6.5 9.5h3"/></svg><span class='h-n'>1</span> testing</button><button type='button' class='chip h-chip h-toggle k-net' data-kind='networking' aria-pressed='true' title='Click to hide or show networking'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="3.8" cy="4" r="1.7"/><circle cx="12.2" cy="4.6" r="1.7"/><circle cx="7.4" cy="12.2" r="1.7"/><path d="M5.4 4.3l5.1.5M5.1 5.2l1.6 5.5M10.7 6l-2.6 4.9"/></svg><span class='h-n'>1</span> networking</button><button type='button' class='chip h-chip h-toggle k-action' data-kind='action' aria-pressed='true' title='Click to hide or show actions'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg><span class='h-n'>8</span> actions</button><button type='button' class='chip h-chip h-toggle k-prompt' data-kind='prompt' aria-pressed='true' title='Click to hide or show requests'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.2l1.5 4.3 4.3 1.5-4.3 1.5L8 13.8 6.5 9.5 2.2 8l4.3-1.5z"/></svg><span class='h-n'>1</span> requests</button></div>
   </div>
-  <div class='graph-tools'><button type='button' class='gt-btn' data-act='collapse'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.5 4.5L8 7l2.5-2.5M5.5 11.5L8 9l2.5 2.5"/></svg>Collapse all</button><button type='button' class='gt-btn' data-act='expand'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.5 6.5L8 4l2.5 2.5M5.5 9.5L8 12l2.5-2.5"/></svg>Expand all</button></div>
+  <div class='graph-tools'><button type='button' class='gt-btn' data-act='expand'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.5 6.5L8 4l2.5 2.5M5.5 9.5L8 12l2.5-2.5"/></svg>Expand all</button><button type='button' class='gt-btn' data-act='collapse'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.5 4.5L8 7l2.5-2.5M5.5 11.5L8 9l2.5 2.5"/></svg>Collapse all</button></div>
   <div class="how">
     <span class="how-lead">How to read this</span>
     <span class="how-step"><b>1</b> Scroll the cards top to bottom: each is one step Claude took.</span>
-    <span class="how-step"><b>2</b> Click a card's <em>header</em> to fold it away, or use <em>Collapse all</em>.</span>
+    <span class="how-step"><b>2</b> Cards start folded: click a card's <em>header</em> to open it, or use <em>Expand all</em>.</span>
     <span class="how-step"><b>3</b> Open <em>What ran</em> and <em>Learn more</em> for the command, reasoning and sources.</span>
     <span class="how-step"><b>4</b> Set the <em>detail level</em> to hide minor steps, or click a <em>type chip</em> above to hide that kind.</span>
   </div>
 </header>
 <main class="graph" data-detail="standard">
 
-    <div class="node k-prompt" data-kind="prompt" data-prio="high" data-rank="3" style="--i:0">
+    <div class="node collapsed k-prompt" data-kind="prompt" data-prio="high" data-rank="3" style="--i:0">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.2l1.5 4.3 4.3 1.5-4.3 1.5L8 13.8 6.5 9.5 2.2 8l4.3-1.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Human request</h3>
             <div class="chips"><span class='chip k-prompt'>Request</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:05</span></div>
@@ -385,10 +385,10 @@ footer b{color:var(--gold)}
       </div>
     </div>
 
-    <div class="node k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:1">
+    <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:1">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">I&#x27;ll start by understanding the current state of the `goldy` directory and how Claude Cod…</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:10</span></div>
@@ -401,10 +401,10 @@ footer b{color:var(--gold)}
       </div>
     </div>
 
-    <div class="node k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:2">
+    <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:2">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Inspect goldy dir and claude skills/agents</h3>
             <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4L7 8l-2.4 1.6M8.4 9.8H11"/></svg>Bash</span><span class='chip c-minor'>detail</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:11</span></div>
@@ -425,10 +425,10 @@ total 0
       </div>
     </div>
 
-    <div class="node k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:3">
+    <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:3">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Examine sentry-cli skill structure</h3>
             <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4L7 8l-2.4 1.6M8.4 9.8H11"/></svg>Bash</span><span class='chip c-minor'>detail</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:19</span></div>
@@ -472,10 +472,10 @@ Best practices and operational guidance for AI coding agents using the Sentry CL
       </div>
     </div>
 
-    <div class="node k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:4">
+    <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:4">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Progressive disclosure: load only what is needed, when needed</h3>
             <div class="chips"><span class='chip k-principle'>Principle</span></div>
@@ -489,10 +489,10 @@ Best practices and operational guidance for AI coding agents using the Sentry CL
       </div>
     </div>
 
-    <div class="node k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:5">
+    <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:5">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">The directory is empty - a fresh project. Goldy needs to capture Claude Code&#x27;s thinking/a…</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:33</span></div>
@@ -511,10 +511,10 @@ Best practices and operational guidance for AI coding agents using the Sentry CL
       </div>
     </div>
 
-    <div class="node k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:6">
+    <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:6">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Inspect session transcript JSONL format</h3>
             <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4L7 8l-2.4 1.6M8.4 9.8H11"/></svg>Bash</span><span class='chip c-lang'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg>Python</span><span class='chip c-minor'>detail</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:35</span></div>
@@ -540,10 +540,10 @@ file-history-snapshot | keys: [&#x27;type&#x27;, &#x27;messageId&#x27;, &#x27;sn
       </div>
     </div>
 
-    <div class="node k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:7">
+    <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:7">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Analyze message and content block types</h3>
             <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4L7 8l-2.4 1.6M8.4 9.8H11"/></svg>Bash</span><span class='chip c-lang'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg>Python</span><span class='chip c-minor'>detail</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:42</span></div>
@@ -574,10 +574,10 @@ user content block types: [&#x27;tool_result&#x27;]</div></details><div class='r
       </div>
     </div>
 
-    <div class="node k-net" data-kind="networking" data-prio="medium" data-rank="2" style="--i:8">
+    <div class="node collapsed k-net" data-kind="networking" data-prio="medium" data-rank="2" style="--i:8">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="3.8" cy="4" r="1.7"/><circle cx="12.2" cy="4.6" r="1.7"/><circle cx="7.4" cy="12.2" r="1.7"/><path d="M5.4 4.3l5.1.5M5.1 5.2l1.6 5.5M10.7 6l-2.6 4.9"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Networking: how this report reaches the web</h3>
             <div class="chips"><span class='chip k-net'>Networking</span></div>
@@ -594,10 +594,10 @@ user content block types: [&#x27;tool_result&#x27;]</div></details><div class='r
       </div>
     </div>
 
-    <div class="node k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:9">
+    <div class="node collapsed k-action" data-kind="action" data-prio="low" data-rank="1" style="--i:9">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Show assistant thinking/text/tool_use sequence</h3>
             <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4L7 8l-2.4 1.6M8.4 9.8H11"/></svg>Bash</span><span class='chip c-lang'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg>Python</span><span class='chip c-minor'>detail</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:42:49</span></div>
@@ -631,10 +631,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:10">
+    <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:10">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">I now understand the transcript shape: assistant messages carry `thinking`/`text`/`tool_u…</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:43:23</span></div>
@@ -648,10 +648,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:11">
+    <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:11">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Separation of concerns: parse, enrich, render</h3>
             <div class="chips"><span class='chip k-principle'>Principle</span></div>
@@ -665,10 +665,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:12">
+    <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:12">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Preparation phase: learn first, then write</h3>
             <div class="chips"><span class='chip k-principle'>Principle</span></div>
@@ -683,10 +683,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:13">
+    <div class="node collapsed k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:13">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Scaffold goldy repo directories</h3>
             <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4L7 8l-2.4 1.6M8.4 9.8H11"/></svg>Bash</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:43:24</span></div>
@@ -701,10 +701,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-security" data-kind="security" data-prio="high" data-rank="3" style="--i:14">
+    <div class="node collapsed k-security" data-kind="security" data-prio="high" data-rank="3" style="--i:14">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.2l5 1.8v3.6c0 3-2 5.2-5 6.2-3-1-5-3.2-5-6.2V4z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Least privilege and symlink safety in the installer</h3>
             <div class="chips"><span class='chip k-security'>Security</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span></div>
@@ -718,10 +718,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:15">
+    <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:15">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Now the transcript parser - mechanical extraction of decision/action nodes from the JSONL:</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:43:27</span></div>
@@ -736,10 +736,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-optim" data-kind="optimization" data-prio="medium" data-rank="2" style="--i:16">
+    <div class="node collapsed k-optim" data-kind="optimization" data-prio="medium" data-rank="2" style="--i:16">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M9 2L4 9h3.2l-1 5 5-7.2H8z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Stream the transcript line by line, not all at once</h3>
             <div class="chips"><span class='chip k-optim'>Performance</span></div>
@@ -753,10 +753,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:17">
+    <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:17">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Deterministic core, model at the edges</h3>
             <div class="chips"><span class='chip k-principle'>Principle</span></div>
@@ -770,10 +770,10 @@ TOOL: Bash | input keys: [&#x27;command&#x27;, &#x27;description&#x27;]</div></d
       </div>
     </div>
 
-    <div class="node k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:18">
+    <div class="node collapsed k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:18">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Write parse_transcript.py</h3>
             <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M4 2h5l3 3v9H4z"/><path d="M9 2v3h3"/><path d="M8 8v3.5M6.25 9.75h3.5"/></svg>Write</span><span class='chip c-lang'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg>Python</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:43:56</span></div>
@@ -907,10 +907,10 @@ Usage:
       </div>
     </div>
 
-    <div class="node k-optim" data-kind="optimization" data-prio="medium" data-rank="2" style="--i:19">
+    <div class="node collapsed k-optim" data-kind="optimization" data-prio="medium" data-rank="2" style="--i:19">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M9 2L4 9h3.2l-1 5 5-7.2H8z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Cap captured output to bound size and cost</h3>
             <div class="chips"><span class='chip k-optim'>Performance</span></div>
@@ -924,10 +924,10 @@ Usage:
       </div>
     </div>
 
-    <div class="node k-security" data-kind="security" data-prio="high" data-rank="3" style="--i:20">
+    <div class="node collapsed k-security" data-kind="security" data-prio="high" data-rank="3" style="--i:20">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.2l5 1.8v3.6c0 3-2 5.2-5 6.2-3-1-5-3.2-5-6.2V4z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Secret hygiene: keep tokens and keys out of the report</h3>
             <div class="chips"><span class='chip k-security'>Security</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span></div>
@@ -941,10 +941,10 @@ Usage:
       </div>
     </div>
 
-    <div class="node k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:21">
+    <div class="node collapsed k-decision" data-kind="decision" data-prio="high" data-rank="3" style="--i:21">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2l6 6-6 6-6-6z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Now the renderer - a standalone, dependency-free Notion-style HTML document with the node…</h3>
             <div class="chips"><span class='chip k-decision'>Decision</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:44:03</span></div>
@@ -959,10 +959,10 @@ Usage:
       </div>
     </div>
 
-    <div class="node k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:22">
+    <div class="node collapsed k-action" data-kind="action" data-prio="high" data-rank="3" style="--i:22">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5 3.5l7 4.5-7 4.5z"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Write render.py</h3>
             <div class="chips"><span class='chip k-action'>Action</span><span class='chip c-tool'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M4 2h5l3 3v9H4z"/><path d="M9 2v3h3"/><path d="M8 8v3.5M6.25 9.75h3.5"/></svg>Write</span><span class='chip c-lang'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/></svg>Python</span><span class='chip c-key'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/></svg>key</span><span class='chip c-time'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>15:45:11</span></div>
@@ -1079,10 +1079,10 @@ Usage:
       </div>
     </div>
 
-    <div class="node k-test" data-kind="testing" data-prio="medium" data-rank="2" style="--i:23">
+    <div class="node collapsed k-test" data-kind="testing" data-prio="medium" data-rank="2" style="--i:23">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M6.3 2v6.6l-2.2 3.1a1.4 1.4 0 001.1 2.2h5.6a1.4 1.4 0 001.1-2.2L9.7 8.6V2"/><path d="M5.5 2h5M6.5 9.5h3"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">How to verify a change like this</h3>
             <div class="chips"><span class='chip k-test'>Testing</span></div>
@@ -1098,10 +1098,10 @@ Usage:
       </div>
     </div>
 
-    <div class="node k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:24">
+    <div class="node collapsed k-principle" data-kind="principle" data-prio="medium" data-rank="2" style="--i:24">
       <div class="spine-dot"><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="4.3" cy="9.7" r="2.6"/><circle cx="11.7" cy="9.7" r="2.6"/><path d="M6.7 9.1c.5-.7 2.1-.7 2.6 0"/><path d="M1.8 8.3L3 4.6M14.2 8.3L13 4.6"/></svg></div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">Single file, zero dependencies, portable output</h3>
             <div class="chips"><span class='chip k-principle'>Principle</span></div>

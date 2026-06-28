@@ -1049,10 +1049,10 @@ def node_html(n, idx):
         f"<div class='mat-wrap'>{materials_html(mats)}</div></details>")
 
     return f"""
-    <div class="node {k['cls']}" data-kind="{n['kind']}" data-prio="{prio}" data-rank="{PRIORITY_RANK[prio]}" style="--i:{idx}">
+    <div class="node collapsed {k['cls']}" data-kind="{n['kind']}" data-prio="{prio}" data-rank="{PRIORITY_RANK[prio]}" style="--i:{idx}">
       <div class="spine-dot">{icon(k['icon'])}</div>
       <div class="card">
-        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+        <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
           <div class="ch-text">
             <h3 class="node-title">{esc(n.get('title','Untitled step'))}</h3>
             <div class="chips">{''.join(chips)}</div>
@@ -1084,10 +1084,10 @@ def graph_tools():
     """The fold controls: collapse or expand every node at once. Individual
     nodes also fold by clicking their header."""
     return ("<div class='graph-tools'>"
-            f"<button type='button' class='gt-btn' data-act='collapse'>"
-            f"{icon('collapse')}Collapse all</button>"
             f"<button type='button' class='gt-btn' data-act='expand'>"
-            f"{icon('expand')}Expand all</button></div>")
+            f"{icon('expand')}Expand all</button>"
+            f"<button type='button' class='gt-btn' data-act='collapse'>"
+            f"{icon('collapse')}Collapse all</button></div>")
 
 
 def render(data, detail=None):
@@ -1586,7 +1586,7 @@ TEMPLATE = """<!doctype html>
   <div class="how">
     <span class="how-lead">How to read this</span>
     <span class="how-step"><b>1</b> Scroll the cards top to bottom: each is one step Claude took.</span>
-    <span class="how-step"><b>2</b> Click a card's <em>header</em> to fold it away, or use <em>Collapse all</em>.</span>
+    <span class="how-step"><b>2</b> Cards start folded: click a card's <em>header</em> to open it, or use <em>Expand all</em>.</span>
     <span class="how-step"><b>3</b> Open <em>What ran</em> and <em>Learn more</em> for the command, reasoning and sources.</span>
     <span class="how-step"><b>4</b> Set the <em>detail level</em> to hide minor steps, or click a <em>type chip</em> above to hide that kind.</span>
   </div>

@@ -208,10 +208,11 @@ block in `nodes.json` (`"essentials"`, `"standard"` or `"everything"`) or with
 Honor the profile here: a low-`depth` or executive `audience` profile suggests
 opening at `essentials`; a teaching-heavy one at `everything`.
 
-**Interactive graph.** Every node folds: clicking a card's header collapses it to
-just its title and chips (the caret flips and the body animates away), and the
-header is keyboard-focusable so Enter or Space toggles it too. Two fold controls,
-Collapse all and Expand all, drive the whole graph at once. Hovering a card lifts
+**Interactive graph.** The graph opens as a folded overview: every node starts
+collapsed to just its title and chips, and clicking a card's header opens it (the
+caret flips and the body animates in). The header is keyboard-focusable, so Enter
+or Space toggles it too. Two fold controls, Expand all and Collapse all, drive the
+whole graph at once. Hovering a card lifts
 it, grows its spine dot and lights its connector. All of this is self-contained
 CSS and JS with a `prefers-reduced-motion` fallback, so the document stays a
 single file with no dependencies.
