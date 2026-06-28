@@ -208,11 +208,14 @@ block in `nodes.json` (`"essentials"`, `"standard"` or `"everything"`) or with
 Honor the profile here: a low-`depth` or executive `audience` profile suggests
 opening at `essentials`; a teaching-heavy one at `everything`.
 
-**Interactive graph.** The graph opens as a folded overview: every node starts
-collapsed to just its title and chips, and clicking a card's header opens it (the
-caret flips and the body animates in). The header is keyboard-focusable, so Enter
-or Space toggles it too. Two fold controls, Expand all and Collapse all, drive the
-whole graph at once. Hovering a card lifts
+**Interactive graph.** The graph opens as a folded overview of bubbles: every node
+starts collapsed to a kind-tinted, pill-shaped bubble showing its spine bead and
+title. Clicking a bubble morphs it into the full card, its radius, fill and padding
+animating while the body unfolds; the caret flips and the bubble's bead grows into
+the card's spine dot. Bubbles are keyboard-focusable, so Enter or Space toggles
+them too. Two fold controls, Expand all and Collapse all, drive the whole graph at
+once. The spine is drawn per node, so the connecting line begins at the first bead
+and ends at the last, with no stub past either end. Hovering a card lifts
 it, grows its spine dot and lights its connector. All of this is self-contained
 CSS and JS with a `prefers-reduced-motion` fallback, so the document stays a
 single file with no dependencies.

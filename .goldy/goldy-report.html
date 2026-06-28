@@ -117,8 +117,17 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .mat-kind .ic{display:none}
 
 .graph{position:relative;padding-left:34px}
-.graph::before{content:"";position:absolute;left:11px;top:6px;bottom:6px;width:2px;
-  background:linear-gradient(var(--violet),var(--gold) 30%,var(--teal) 60%,var(--blue))}
+/* spine: each node draws the segment from its own dot down to the next node's,
+   so the line starts at the first dot and stops at the last (no stub past either
+   end). It tracks live height, so collapse/expand keeps the segments connected.
+   Each segment takes its node's colour, turning the spine into a colour chain. */
+.node::before{content:"";position:absolute;left:-23px;top:28px;width:2px;
+  height:calc(100% + 18px);background:var(--gold);z-index:0}
+.node:last-child::before{display:none}
+.k-action::before{background:var(--blue)} .k-prompt::before{background:var(--violet)}
+.k-principle::before{background:var(--teal)} .k-security::before{background:#c0392b}
+.k-optim::before{background:#d99412} .k-test::before{background:#2f9d63}
+.k-net::before{background:#1f87b0}
 .node{position:relative;margin:0 0 18px;opacity:0;transform:translateY(14px);
   animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms)}
 @keyframes rise{to{opacity:1;transform:none}}
@@ -128,14 +137,16 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
   transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s}
 .node:hover .spine-dot{transform:scale(1.18) rotate(-4deg);
   box-shadow:0 0 0 5px var(--bg),0 4px 12px rgba(0,0,0,.24)}
-.node.collapsed .spine-dot{transform:scale(.86)}
-.node.collapsed:hover .spine-dot{transform:scale(1.05)}
+/* collapsed: the dot stays the spine bead; the lozenge beside it is the bubble */
+.node.collapsed .spine-dot{transform:scale(1.08)}
+.node.collapsed:hover .spine-dot{transform:scale(1.2)}
 .k-action .spine-dot{background:var(--blue)} .k-prompt .spine-dot{background:var(--violet)}
 .k-principle .spine-dot{background:var(--teal)}
 .k-security .spine-dot{background:#c0392b} .k-optim .spine-dot{background:#d99412}
 .k-test .spine-dot{background:#2f9d63} .k-net .spine-dot{background:#1f87b0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:18px 20px;transition:transform .2s,box-shadow .2s,border-color .2s}
+  box-shadow:var(--shadow);padding:18px 20px;
+  transition:transform .25s,box-shadow .28s,border-color .28s,background-color .28s,padding .28s,border-radius .3s cubic-bezier(.2,.7,.3,1)}
 .card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(40,36,28,.08),0 18px 40px rgba(40,36,28,.08);
   border-color:#ded8cf}
 .node::after{content:"";position:absolute;left:-22px;top:18px;width:18px;height:2px;
@@ -177,7 +188,25 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
   transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1),opacity .22s ease}
 .cb-inner{overflow:hidden;min-height:0}
 .node.collapsed .card-body{grid-template-rows:0fr;opacity:0}
-.node.collapsed .card-head{margin-bottom:-6px}
+/* collapsed node = a graph bubble: a full-width rounded lozenge, kind-tinted,
+   showing the dot and title. Clicking morphs its radius, fill and padding into
+   the card and unfolds the body, all on one element so it reads as one shape. */
+.node.collapsed{background:transparent}
+.node.collapsed .card{border-radius:999px;padding:16px 24px 16px 18px;
+  border:1px solid var(--line);box-shadow:0 1px 2px rgba(40,36,28,.06)}
+.node.collapsed.k-decision .card{background:var(--gold-soft);border-color:#efe1bd}
+.node.collapsed.k-action .card{background:var(--blue-soft);border-color:#cfe0f1}
+.node.collapsed.k-prompt .card{background:var(--violet-soft);border-color:#ddd2f5}
+.node.collapsed.k-principle .card{background:var(--teal-soft);border-color:#bfe4dd}
+.node.collapsed.k-security .card{background:#fdeceb;border-color:#f3ccc7}
+.node.collapsed.k-optim .card{background:#fff2dd;border-color:#f3dcae}
+.node.collapsed.k-test .card{background:#e6f4ec;border-color:#c6e6d3}
+.node.collapsed.k-net .card{background:#e2f1f8;border-color:#c2e2ef}
+.node.collapsed .card-head{margin:0;padding:0;align-items:center}
+.node.collapsed .card-head:hover{background:transparent}
+.node.collapsed .chips{display:none}
+.node.collapsed .node-title{font-size:14.5px}
+.node.collapsed:hover .card{filter:brightness(.985);box-shadow:0 2px 8px rgba(40,36,28,.10)}
 .node-title{font-size:16px;margin:0;font-weight:700;letter-spacing:-.01em}
 .k-principle .node-title{color:#1f6b61}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -351,7 +380,7 @@ footer b{color:var(--gold)}
   <span class="eyebrow"><span class="dot"></span>Goldy walkthrough</span>
   <h1>Building Goldy</h1>
   <p class="intro">Goldy is a set of Claude Code skills and agents that turn a session into a readable report. This walkthrough traces how it was built, step by step, with the reasoning and sources behind each decision.</p>
-  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 21:02</span></div>
+  <div class='byline'><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d="M2 4.5h4l1.5 2H14V12H2z"/></svg>goldy</span><span class='by-item'><svg class='ic' viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.3 1.6"/></svg>generated 2026-06-28 21:15</span></div>
   <div class='detail-ctl'><span class='dc-lead'>Detail level</span><div class='dc-seg' role='group' aria-label='Detail level'><button type='button' class='dc-btn' data-level='essentials' title='Only the key requests and decisions.'>Essentials</button><button type='button' class='dc-btn active' data-level='standard' title='Key steps plus the actions that carried them out.'>Standard</button><button type='button' class='dc-btn' data-level='everything' title='Every node, including minor and supporting steps.'>Everything</button></div><span class='dc-count'></span></div>
   <div class="filters">
     <span class="filters-lead">Filter by type</span>
