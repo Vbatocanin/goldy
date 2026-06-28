@@ -132,7 +132,8 @@ open .goldy/goldy-report.html       # macOS
 A repo accumulates many sessions, so Goldy keeps a **history**: each conversation
 gets its own report under `.goldy/reports/<id>.html`, and `.goldy/goldy-report.html`
 is a **master index** that links to all of them, newest first. Re-rendering the
-same session overwrites its report rather than adding a duplicate.
+same session overwrites its report rather than adding a duplicate, and each report
+carries an up-arrow back to the index.
 
 ![the master index: a card per conversation with its summary, date, step count and kind chips](.goldy/history.png)
 

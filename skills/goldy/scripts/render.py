@@ -1109,7 +1109,7 @@ def graph_tools():
             f"{icon('collapse')}Collapse all</button></div>")
 
 
-def render(data, detail=None):
+def render(data, detail=None, parent=None):
     meta = data.get("meta", {})
     nodes = data.get("nodes", [])
     counts = {kk: sum(n["kind"] == kk for n in nodes) for kk in KIND}
@@ -1155,11 +1155,17 @@ def render(data, detail=None):
                  "A walkthrough of every decision and action in this session, each "
                  "with the reasoning behind it and the sources to understand it.").strip()
 
+    parent_link = ""
+    if parent:
+        parent_link = (f"<a class='parent-link' href='{html.escape(parent)}' "
+                       f"title='Go to parent doc' aria-label='Go to parent doc'>"
+                       f"{icon('arrowUp')}</a>")
+
     body = "\n".join(node_html(n, i) for i, n in enumerate(nodes))
     return TEMPLATE.format(
         title=esc(meta.get("project", "Goldy") + " · Goldy report"),
         header_chips="".join(hc), headline=esc(headline), summary=esc(summary),
-        byline=byline, detail_control=detail_control(detail),
+        byline=byline, detail_control=detail_control(detail), parent_link=parent_link,
         graph_tools=graph_tools(), detail=detail, goldy_mark=icon("goldy"),
         nodes=body, css=CSS, js=JS)
 
@@ -1182,6 +1188,13 @@ header{margin-bottom:40px}
 .eyebrow .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);
   box-shadow:0 0 0 4px var(--gold-soft)}
 .eyebrow .goldy-mark{width:18px;height:18px}.eyebrow .goldy-mark .ic{width:18px;height:18px}
+/* up-arrow back to the master index (the parent doc), on per-conversation reports */
+.parent-link{display:inline-flex;align-items:center;justify-content:center;margin:0 0 20px;
+  width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--card);
+  color:var(--gold);text-decoration:none;box-shadow:var(--shadow);
+  transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .2s,border-color .2s}
+.parent-link:hover{transform:translateY(-2px);border-color:#e3d8bf;box-shadow:0 5px 14px rgba(40,36,28,.12)}
+.parent-link .ic{width:18px;height:18px}
 h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spacing:-.02em;
   max-width:24ch}
 .intro{color:var(--muted);font-size:15.5px;max-width:62ch;line-height:1.55}
@@ -1687,6 +1700,7 @@ TEMPLATE = """<!doctype html>
 <title>{title}</title>
 <style>{css}</style></head>
 <body><div class="wrap">
+{parent_link}
 <header>
   <span class="eyebrow"><span class="goldy-mark">{goldy_mark}</span>Goldy walkthrough</span>
   <h1>{headline}</h1>
@@ -1724,13 +1738,18 @@ def main():
     ap.add_argument("--register", action="store_true",
                     help="record this report in the reports-dir history manifest "
                     "(index.json beside the output file)")
+    ap.add_argument("--parent", help="href of the master index for the 'Go to "
+                    "parent doc' back-link (default: ../goldy-report.html when "
+                    "--register is set)")
     args = ap.parse_args()
     raw = sys.stdin.read() if args.nodes == "-" else open(args.nodes).read()
     data = json.loads(raw)
     out_parent = os.path.dirname(os.path.abspath(args.out))
     os.makedirs(out_parent, exist_ok=True)
+    # registered reports live in reports/<id>.html, so the index is one level up
+    parent = args.parent or ("../goldy-report.html" if args.register else None)
     with open(args.out, "w") as fh:
-        fh.write(render(data, detail=args.detail))
+        fh.write(render(data, detail=args.detail, parent=parent))
     print(f"goldy: rendered {len(data.get('nodes', []))} nodes -> {args.out}",
           file=sys.stderr)
     if args.register:

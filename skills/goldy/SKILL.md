@@ -229,7 +229,10 @@ slug of the title, when `--register` is given without `--id`), so re-rendering t
 same conversation overwrites its report rather than adding a duplicate. `--register`
 upserts a small entry (title, summary, date, kind counts) into
 `.goldy/reports/index.json`; `render_index.py` turns that manifest into the master
-page, newest first. Offer to open `.goldy/goldy-report.html` (the hub) when done.
+page, newest first. Each report shows an up-arrow back to the index (the parent
+doc): with `--register` the link defaults to `../goldy-report.html`, or set it
+explicitly with `--parent <href>`. Offer to open `.goldy/goldy-report.html` (the
+hub) when done.
 
 **Detail level.** The report opens with a Detail control (Essentials, Standard,
 Everything) the reader can flip live to filter nodes by their `priority`:
