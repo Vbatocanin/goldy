@@ -114,7 +114,7 @@
       "kind": "principle",
       "title": "Progressive disclosure: load only what is needed, when needed",
       "summary": "A skill exposes just its name and description up front; the full instructions and scripts load only when it is actually used.",
-      "rationale": "Goldy follows the same idea internally. The report shows a one-line title and chips first, and tucks the command, result and references into drawers. The reader controls depth instead of drowning in everything at once.",
+      "rationale": "Goldy follows the same idea internally. The report shows a one-line title and chips first, and tucks the command, result and references into drawers. The reader controls how much detail to reveal instead of being shown everything at once.",
       "materials": [
         {
           "title": "Progressive Disclosure (Nielsen Norman Group)",
@@ -364,20 +364,20 @@
       "id": "s2",
       "kind": "security",
       "title": "Least privilege and symlink safety in the installer",
-      "summary": "Transcripts live in a private ~/.claude (mode 0700), and the installer refuses to clobber a real file when linking.",
-      "rationale": "The install step only creates symlinks and bails out if the target exists and is not already a link, which avoids overwriting user data and the classic symlink-swap attack. Goldy reads the private transcript directory but never widens its permissions.",
+      "summary": "The installer only creates symlinks, and never overwrites a real file. Its link() helper skips any destination that already exists and is not a symlink, printing a warning instead of replacing it; otherwise it runs `ln -sfn`, which replaces an existing link in place rather than dereferencing it into a directory.",
+      "rationale": "Skipping an existing non-symlink preserves whatever file the user already has at that path, and the -n (no-dereference) flag prevents writing through a symlink into an unintended directory. The installer's footprint is small by design: it creates only ~/.claude/skills and ~/.claude/agents, symlinks the skills and agent, and adds one SessionStart hook entry to settings.json. Goldy reads the session transcripts under ~/.claude read-only and changes no file permissions.",
       "materials": [
         {
-          "title": "CWE-59: Link Following",
+          "title": "CWE-59: Improper Link Resolution Before File Access (Link Following)",
           "kind": "reference",
           "url": "https://cwe.mitre.org/data/definitions/59.html",
-          "note": "Why an installer must be careful about following or replacing symlinks."
+          "note": "Why an installer must guard against replacing or following a symlink at a write target."
         },
         {
           "title": "Principle of least privilege",
           "kind": "reference",
           "url": "https://en.wikipedia.org/wiki/Principle_of_least_privilege",
-          "note": "The access-control idea behind keeping the transcript directory private."
+          "note": "The access-control principle behind the installer's minimal, symlink-only footprint."
         }
       ],
       "transition": "With the repo laid out safely, the first script could be designed."
@@ -438,7 +438,7 @@
           "title": "Reading files lazily in Python",
           "kind": "tutorial",
           "url": "https://realpython.com/python-iterators-iterables/",
-          "note": "Why iterating a file object streams it rather than buffering the whole thing.",
+          "note": "Why iterating a file object streams it rather than buffering the entire file.",
           "summary": "Iterators produce values one at a time and only when asked, so they let you process data that is large or even unbounded without holding it all in memory. A Python file object is itself an iterator over lines, so looping directly over it reads one line per step. That is exactly how the parser walks a transcript without loading the whole session."
         },
         {
@@ -488,7 +488,7 @@
     {
       "id": "n12",
       "kind": "action",
-      "rationale": "With the JSONL schema already confirmed by hand (the learning step just before), the parser could be written directly against the real shape. It is intentionally dumb: it extracts raw facts and leaves rationale and materials empty, so extraction stays separate from interpretation and each piece is independently testable.",
+      "rationale": "With the JSONL schema already confirmed by hand (the learning step just before), the parser could be written directly against the real shape. It is intentionally minimal: it extracts raw facts and leaves rationale and materials empty, so extraction stays separate from interpretation and each piece is independently testable.",
       "materials": [
         {
           "title": "Python: dictionaries",
@@ -592,7 +592,7 @@
       "alternatives": [
         {
           "option": "Static-site generator",
-          "tradeoff": "Tools like Eleventy give nice output, but add a build step and dependencies to install and keep current.",
+          "tradeoff": "Tools like Eleventy produce polished output, but add a build step and dependencies to install and keep current.",
           "url": "https://www.11ty.dev/"
         },
         {
