@@ -1052,11 +1052,16 @@ def node_html(n, idx):
     <div class="node {k['cls']}" data-kind="{n['kind']}" data-prio="{prio}" data-rank="{PRIORITY_RANK[prio]}" style="--i:{idx}">
       <div class="spine-dot">{icon(k['icon'])}</div>
       <div class="card">
-        <div class="card-head">
-          <h3 class="node-title">{esc(n.get('title','Untitled step'))}</h3>
-          <div class="chips">{''.join(chips)}</div>
+        <div class="card-head" role="button" tabindex="0" aria-expanded="true" aria-label="Collapse or expand this step">
+          <div class="ch-text">
+            <h3 class="node-title">{esc(n.get('title','Untitled step'))}</h3>
+            <div class="chips">{''.join(chips)}</div>
+          </div>
+          <span class="node-caret">{icon('chevron')}</span>
         </div>
+        <div class="card-body"><div class="cb-inner">
         {''.join(body)}
+        </div></div>
       </div>
     </div>"""
 
@@ -1073,6 +1078,16 @@ def detail_control(active):
             "<span class='dc-lead'>Detail level</span>"
             f"<div class='dc-seg' role='group' aria-label='Detail level'>{''.join(btns)}</div>"
             "<span class='dc-count'></span></div>")
+
+
+def graph_tools():
+    """The fold controls: collapse or expand every node at once. Individual
+    nodes also fold by clicking their header."""
+    return ("<div class='graph-tools'>"
+            f"<button type='button' class='gt-btn' data-act='collapse'>"
+            f"{icon('collapse')}Collapse all</button>"
+            f"<button type='button' class='gt-btn' data-act='expand'>"
+            f"{icon('expand')}Expand all</button></div>")
 
 
 def render(data, detail=None):
@@ -1125,7 +1140,8 @@ def render(data, detail=None):
     return TEMPLATE.format(
         title=esc(meta.get("project", "Goldy") + " · Goldy report"),
         header_chips="".join(hc), headline=esc(headline), summary=esc(summary),
-        byline=byline, detail_control=detail_control(detail), detail=detail,
+        byline=byline, detail_control=detail_control(detail),
+        graph_tools=graph_tools(), detail=detail,
         nodes=body, css=CSS, js=JS)
 
 
@@ -1181,6 +1197,15 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .dc-btn.active{background:var(--card);color:var(--ink);
   box-shadow:0 1px 2px rgba(40,36,28,.12);font-weight:700}
 .dc-count{font-size:12px;color:#a39d92;font-variant-numeric:tabular-nums}
+/* fold controls: collapse or expand every node at once */
+.graph-tools{display:flex;gap:8px;margin-top:14px}
+.gt-btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12.5px;
+  font-weight:600;color:var(--muted);background:#efece6;border:1px solid var(--line);
+  border-radius:999px;padding:5px 13px;cursor:pointer;transition:.15s}
+.gt-btn:hover{color:var(--ink);border-color:#ded8cf;background:#f3f0ea;transform:translateY(-1px)}
+.gt-btn:active{transform:translateY(0)}
+.gt-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gt-btn .ic{width:14px;height:14px;color:var(--gold)}
 /* filter 1: hide nodes whose rank is below the chosen detail level */
 .graph[data-detail="essentials"] .node:not([data-rank="3"]){display:none}
 .graph[data-detail="standard"] .node[data-rank="1"]{display:none}
@@ -1242,7 +1267,12 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 @keyframes rise{to{opacity:1;transform:none}}
 .spine-dot{position:absolute;left:-34px;top:16px;width:24px;height:24px;border-radius:50%;
   display:grid;place-items:center;font-size:12px;color:#fff;background:var(--gold);
-  box-shadow:0 0 0 5px var(--bg),0 2px 6px rgba(0,0,0,.15);z-index:1}
+  box-shadow:0 0 0 5px var(--bg),0 2px 6px rgba(0,0,0,.15);z-index:1;
+  transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s}
+.node:hover .spine-dot{transform:scale(1.18) rotate(-4deg);
+  box-shadow:0 0 0 5px var(--bg),0 4px 12px rgba(0,0,0,.24)}
+.node.collapsed .spine-dot{transform:scale(.86)}
+.node.collapsed:hover .spine-dot{transform:scale(1.05)}
 .k-action .spine-dot{background:var(--blue)} .k-prompt .spine-dot{background:var(--violet)}
 .k-principle .spine-dot{background:var(--teal)}
 .k-security .spine-dot{background:#c0392b} .k-optim .spine-dot{background:#d99412}
@@ -1252,7 +1282,8 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(40,36,28,.08),0 18px 40px rgba(40,36,28,.08);
   border-color:#ded8cf}
 .node::after{content:"";position:absolute;left:-22px;top:18px;width:18px;height:2px;
-  background:var(--line)}
+  background:var(--line);transition:background .2s,width .2s}
+.node:hover::after{background:var(--gold);width:22px}
 .k-decision .card{border-left:3px solid var(--gold)}
 .k-action .card{border-left:3px solid var(--blue)}
 .k-prompt .card{border-left:3px solid var(--violet)}
@@ -1273,7 +1304,23 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-security .rat-tag{color:#c0392b}
 .k-optim .rationale{background:linear-gradient(#fffaf0,#fff3df);border-color:#f0dcb0}
 .k-optim .rat-tag{color:#cf8c14}
-.card-head{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+/* the card header doubles as a collapse toggle for its node */
+.card-head{display:flex;align-items:flex-start;gap:12px;margin:-6px -8px 6px;padding:6px 8px;
+  border-radius:10px;cursor:pointer;user-select:none;transition:background .15s}
+.card-head:hover{background:rgba(202,162,74,.08)}
+.card-head:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.ch-text{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.node-caret{flex:none;margin-top:3px;color:#c4bdb0;line-height:0;
+  transition:transform .25s cubic-bezier(.2,.7,.3,1),color .15s}
+.node-caret .ic{width:15px;height:15px}
+.card-head:hover .node-caret{color:var(--gold)}
+.card-head[aria-expanded="true"] .node-caret{transform:rotate(90deg)}
+/* collapsible body: smooth height via the grid-template-rows 1fr/0fr trick */
+.card-body{display:grid;grid-template-rows:1fr;
+  transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1),opacity .22s ease}
+.cb-inner{overflow:hidden;min-height:0}
+.node.collapsed .card-body{grid-template-rows:0fr;opacity:0}
+.node.collapsed .card-head{margin-bottom:-6px}
 .node-title{font-size:16px;margin:0;font-weight:700;letter-spacing:-.01em}
 .k-principle .node-title{color:#1f6b61}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -1435,6 +1482,12 @@ a.mat-link:hover{border-color:var(--gold);background:var(--gold-soft);transform:
 .mat-empty{font-size:13px;color:#a39d92;font-style:italic;padding:4px 0}
 footer{margin-top:60px;text-align:center;color:#b6b0a4;font-size:12.5px}
 footer b{color:var(--gold)}
+/* respect a reader who prefers less motion: keep state changes, drop the animation */
+@media (prefers-reduced-motion:reduce){
+  .node{animation:none;opacity:1;transform:none}
+  .card,.card-body,.spine-dot,.node::after,.node-caret,.gt-btn,.drawer .code,
+  .drawer .cmd,.drawer .mat-wrap{transition:none;animation:none}
+}
 """
 
 JS = r"""
@@ -1488,6 +1541,29 @@ document.querySelectorAll('.drawer.materials').forEach(d=>{
   });
   update();
 })();
+
+// Per-node fold: a card header is a toggle; the fold-all buttons drive them all.
+(function(){
+  function setNode(node,collapsed){
+    node.classList.toggle('collapsed',collapsed);
+    var h=node.querySelector('.card-head');
+    if(h)h.setAttribute('aria-expanded',collapsed?'false':'true');
+  }
+  document.querySelectorAll('.card-head').forEach(function(h){
+    var node=h.closest('.node');
+    function toggle(){setNode(node,!node.classList.contains('collapsed'));}
+    h.addEventListener('click',toggle);
+    h.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}
+    });
+  });
+  document.querySelectorAll('.gt-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      var collapse=b.dataset.act==='collapse';
+      document.querySelectorAll('.node').forEach(function(n){setNode(n,collapse);});
+    });
+  });
+})();
 """
 
 TEMPLATE = """<!doctype html>
@@ -1506,11 +1582,12 @@ TEMPLATE = """<!doctype html>
     <span class="filters-lead">Filter by type</span>
     <div class="head-chips">{header_chips}</div>
   </div>
+  {graph_tools}
   <div class="how">
     <span class="how-lead">How to read this</span>
     <span class="how-step"><b>1</b> Scroll the cards top to bottom: each is one step Claude took.</span>
-    <span class="how-step"><b>2</b> Open <em>What ran</em> to see the exact command or code, with hover hints.</span>
-    <span class="how-step"><b>3</b> Open <em>Learn more</em> for the reasoning and curated sources.</span>
+    <span class="how-step"><b>2</b> Click a card's <em>header</em> to fold it away, or use <em>Collapse all</em>.</span>
+    <span class="how-step"><b>3</b> Open <em>What ran</em> and <em>Learn more</em> for the command, reasoning and sources.</span>
     <span class="how-step"><b>4</b> Set the <em>detail level</em> to hide minor steps, or click a <em>type chip</em> above to hide that kind.</span>
   </div>
 </header>

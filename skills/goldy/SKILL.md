@@ -208,6 +208,14 @@ block in `nodes.json` (`"essentials"`, `"standard"` or `"everything"`) or with
 Honor the profile here: a low-`depth` or executive `audience` profile suggests
 opening at `essentials`; a teaching-heavy one at `everything`.
 
+**Interactive graph.** Every node folds: clicking a card's header collapses it to
+just its title and chips (the caret flips and the body animates away), and the
+header is keyboard-focusable so Enter or Space toggles it too. Two fold controls,
+Collapse all and Expand all, drive the whole graph at once. Hovering a card lifts
+it, grows its spine dot and lights its connector. All of this is self-contained
+CSS and JS with a `prefers-reduced-motion` fallback, so the document stays a
+single file with no dependencies.
+
 The renderer also annotates code for free: shell tokens (commands, subcommands,
 flags, paths, operators), command output (paths, permissions, exit codes,
 errors), embedded programs (`python3 -c ...`, heredocs) and written code files

@@ -37,6 +37,8 @@ ICONS = {
     "books":     '<path d="M3 3.5h3v9H3zM6 3.5h3v9H6z"/><path d="M9.2 4.2l2.9.8-2 8.3-2.9-.8"/>',
     "spark":     '<path d="M8 2.6l1.1 3.3 3.3 1.1-3.3 1.1L8 11.4 6.9 8.1 3.6 7l3.3-1.1z"/>',
     "chevron":   '<path d="M6 4l4 4-4 4"/>',
+    "expand":    '<path d="M5.5 6.5L8 4l2.5 2.5M5.5 9.5L8 12l2.5-2.5"/>',
+    "collapse":  '<path d="M5.5 4.5L8 7l2.5-2.5M5.5 11.5L8 9l2.5 2.5"/>',
     "alert":     '<path d="M8 2.4l6.2 10.8H1.8z"/><path d="M8 6.4v3.2M8 11.4h.01"/>',
     "fork":      '<path d="M8 13.2V8M8 8L4.7 4.7M8 8l3.3-3.3"/><circle cx="4.4" cy="4.4" r="1.2"/><circle cx="11.6" cy="4.4" r="1.2"/><circle cx="8" cy="13.4" r="1.2"/>',
     "code":      '<path d="M5.8 4.5L2.8 8l3 3.5M10.2 4.5l3 3.5-3 3.5"/>',
