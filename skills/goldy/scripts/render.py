@@ -1069,6 +1069,7 @@ def node_html(n, idx):
       <div class="spine-dot">{icon(k['icon'])}</div>
       <div class="card">
         <div class="card-head" role="button" tabindex="0" aria-expanded="false" aria-label="Collapse or expand this step">
+          <span class="node-ico">{icon(k['icon'])}</span>
           <div class="ch-text">
             <h3 class="node-title">{esc(short_title(n.get('title','Untitled step')))}</h3>
             <div class="chips">{''.join(chips)}</div>
@@ -1290,7 +1291,7 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-net::before{background:#1f87b0}
 .node{position:relative;margin:0 0 18px;opacity:0;transform:translateY(14px);
   animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--i)*60ms);
-  --indent:0px}
+  --indent:0px;background:transparent}
 @keyframes rise{to{opacity:1;transform:none}}
 /* priority staircase: lower-priority nodes step further right off the spine, so
    the key steps sit closest to the line and minor ones cascade outward */
@@ -1299,7 +1300,7 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .spine-dot{position:absolute;left:-34px;top:16px;width:24px;height:24px;border-radius:50%;
   display:grid;place-items:center;font-size:12px;color:#fff;background:var(--gold);
   box-shadow:0 0 0 5px var(--bg),0 2px 6px rgba(0,0,0,.15);z-index:1;
-  transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s}
+  transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s,opacity .24s}
 .node:hover .spine-dot{transform:scale(1.18) rotate(-4deg);
   box-shadow:0 0 0 5px var(--bg),0 4px 12px rgba(0,0,0,.24)}
 /* collapsed: the dot stays the spine bead; the lozenge beside it is the bubble */
@@ -1353,6 +1354,20 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
   border-radius:10px;cursor:pointer;user-select:none;transition:background .15s}
 .card-head:hover{background:rgba(202,162,74,.08)}
 .card-head:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+/* the kind icon, rendered as a round badge. It is small in the open card and
+   swells into the big bubble face when the node collapses, morphing on one
+   element so the open/closed states read as the same object resizing. */
+.node-ico{flex:none;align-self:flex-start;display:grid;place-items:center;
+  width:34px;height:34px;border-radius:50%;color:#fff;background:var(--gold);
+  box-shadow:0 2px 6px rgba(40,36,28,.16);
+  transition:width .32s cubic-bezier(.2,.7,.3,1),height .32s cubic-bezier(.2,.7,.3,1),
+    box-shadow .28s,transform .24s cubic-bezier(.2,.7,.3,1)}
+.node-ico .ic{width:18px;height:18px;transition:width .32s cubic-bezier(.2,.7,.3,1),
+  height .32s cubic-bezier(.2,.7,.3,1)}
+.k-action .node-ico{background:var(--blue)} .k-prompt .node-ico{background:var(--violet)}
+.k-principle .node-ico{background:var(--teal)} .k-security .node-ico{background:#c0392b}
+.k-optim .node-ico{background:#d99412} .k-test .node-ico{background:#2f9d63}
+.k-net .node-ico{background:#1f87b0}
 .ch-text{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
 .node-caret{flex:none;margin-top:3px;color:#c4bdb0;line-height:0;
   transition:transform .25s cubic-bezier(.2,.7,.3,1),color .15s}
@@ -1364,25 +1379,24 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
   transition:grid-template-rows .3s cubic-bezier(.2,.7,.3,1),opacity .22s ease}
 .cb-inner{overflow:hidden;min-height:0}
 .node.collapsed .card-body{grid-template-rows:0fr;opacity:0}
-/* collapsed node = a graph bubble: a full-width rounded lozenge, kind-tinted,
-   showing the dot and title. Clicking morphs its radius, fill and padding into
-   the card and unfolds the body, all on one element so it reads as one shape. */
-.node.collapsed{background:transparent}
-.node.collapsed .card{border-radius:999px;padding:16px 24px 16px 18px;
-  border:1px solid var(--line);box-shadow:0 1px 2px rgba(40,36,28,.06)}
-.node.collapsed.k-decision .card{background:var(--gold-soft);border-color:#efe1bd}
-.node.collapsed.k-action .card{background:var(--blue-soft);border-color:#cfe0f1}
-.node.collapsed.k-prompt .card{background:var(--violet-soft);border-color:#ddd2f5}
-.node.collapsed.k-principle .card{background:var(--teal-soft);border-color:#bfe4dd}
-.node.collapsed.k-security .card{background:#fdeceb;border-color:#f3ccc7}
-.node.collapsed.k-optim .card{background:#fff2dd;border-color:#f3dcae}
-.node.collapsed.k-test .card{background:#e6f4ec;border-color:#c6e6d3}
-.node.collapsed.k-net .card{background:#e2f1f8;border-color:#c2e2ef}
-.node.collapsed .card-head{margin:0;padding:0;align-items:center}
-.node.collapsed .card-head:hover{background:transparent}
+/* collapsed node = a graph bubble: the kind icon swells into a big round face
+   with the title beside it, the card chrome (border, fill, padding, body) all
+   melting away. Clicking shrinks the face back to a badge and the full card
+   grows around it, so open and closed read as one object resizing. */
+.node.collapsed .spine-dot{opacity:0;transform:scale(.4);pointer-events:none}  /* the big face is the bead now */
+.node.collapsed .card{background:transparent;border:none;box-shadow:none;
+  padding:4px 0;border-radius:0}
+.node.collapsed .card:hover{transform:none}
+.node.collapsed .card-head{margin:0;padding:6px 4px;gap:16px;align-items:center}
+.node.collapsed .card-head:hover{background:rgba(202,162,74,.06)}
+.node.collapsed .node-ico{width:58px;height:58px;box-shadow:0 5px 16px rgba(40,36,28,.20)}
+.node.collapsed .node-ico .ic{width:27px;height:27px}
+.node.collapsed:hover .node-ico{transform:scale(1.07);box-shadow:0 8px 22px rgba(40,36,28,.26)}
 .node.collapsed .chips{display:none}
-.node.collapsed .node-title{font-size:14.5px}
-.node.collapsed:hover .card{filter:brightness(.985);box-shadow:0 2px 8px rgba(40,36,28,.10)}
+.node.collapsed .node-caret{display:none}
+.node.collapsed .node-title{font-size:15.5px}
+/* the spine connector reaches the centre of the big face when collapsed */
+.node.collapsed::after{width:calc(34px + var(--indent,0px))}
 .node-title{font-size:16px;margin:0;font-weight:700;letter-spacing:-.01em}
 .k-principle .node-title{color:#1f6b61}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -1547,8 +1561,8 @@ footer b{color:var(--gold)}
 /* respect a reader who prefers less motion: keep state changes, drop the animation */
 @media (prefers-reduced-motion:reduce){
   .node{animation:none;opacity:1;transform:none}
-  .card,.card-body,.spine-dot,.node::after,.node-caret,.gt-btn,.drawer .code,
-  .drawer .cmd,.drawer .mat-wrap{transition:none;animation:none}
+  .card,.card-body,.spine-dot,.node::after,.node-caret,.node-ico,.node-ico .ic,
+  .gt-btn,.drawer .code,.drawer .cmd,.drawer .mat-wrap{transition:none;animation:none}
 }
 """
 

@@ -221,11 +221,12 @@ Honor the profile here: a low-`depth` or executive `audience` profile suggests
 opening at `essentials`; a teaching-heavy one at `everything`.
 
 **Interactive graph.** The graph opens as a folded overview of bubbles: every node
-starts collapsed to a kind-tinted, pill-shaped bubble showing its spine bead and
-title. Clicking a bubble morphs it into the full card, its radius, fill and padding
-animating while the body unfolds; the caret flips and the bubble's bead grows into
-the card's spine dot. Bubbles are keyboard-focusable, so Enter or Space toggles
-them too. Two fold controls, Expand all and Collapse all, drive the whole graph at
+starts collapsed to a big round, kind-coloured icon face with its title beside it,
+the card chrome (border, fill, padding, body) melted away. Clicking a bubble morphs
+it into the full card: the icon face shrinks from a 58px bubble to a small header
+badge while the card grows around it and the body unfolds, all on one element so
+open and closed read as the same object resizing. Bubbles are keyboard-focusable,
+so Enter or Space toggles them too. Two fold controls, Expand all and Collapse all, drive the whole graph at
 once. The spine is drawn per node, so the connecting line begins at the first bead
 and ends at the last, with no stub past either end.
 
