@@ -11,6 +11,7 @@ over the built-ins, so the set is extensible without touching this file.
 """
 import json
 import os
+import re
 
 # inner markup of each 16x16 icon (viewBox 0 0 16 16, stroke = currentColor)
 ICONS = {
@@ -24,10 +25,8 @@ ICONS = {
     "testing":   '<path d="M6.3 2v6.6l-2.2 3.1a1.4 1.4 0 001.1 2.2h5.6a1.4 1.4 0 001.1-2.2L9.7 8.6V2"/><path d="M5.5 2h5M6.5 9.5h3"/>',
     "network":   '<circle cx="3.8" cy="4" r="1.7"/><circle cx="12.2" cy="4.6" r="1.7"/><circle cx="7.4" cy="12.2" r="1.7"/><path d="M5.4 4.3l5.1.5M5.1 5.2l1.6 5.5M10.7 6l-2.6 4.9"/>',
     "recap":     '<path d="M3.5 2.6h9v10.8h-9z"/><path d="M5.6 5.4h4.8M5.6 8h4.8M5.6 10.6h3"/>',
-    # Goldy's brand mark: a single golden thread tied in an overhand knot. A round
-    # bight up top, the two ends woven through one over/under crossing (the gap in
-    # the under-strand shows the weave), trailing off as tails
-    "goldy":     '<path d="M6.5 7.6C4.9 6.7 4.7 4 6.4 3 8.1 2 10.9 2.7 11.2 5 11.4 6.5 10.8 7.2 9.5 7.6"/><path d="M6.5 7.6C7.1 9 8.4 9.7 9.6 10.6 10.6 11.4 11.3 12.2 11.7 13.2"/><path d="M9.5 7.6C9.1 8.6 8.7 9.1 8.4 9.5"/><path d="M7.5 10.2C6.6 11.1 5.6 11.9 4.3 13.2"/>',
+    # (Goldy's brand mark, "goldy", is a full multi-colour SVG, not a currentColor
+    # glyph. It lives in goldy_mark.svg and is special-cased in icon() below.)
     # tools
     "terminal":  '<rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4L7 8l-2.4 1.6M8.4 9.8H11"/>',
     "pencil":    '<path d="M10.5 2.8l2.7 2.7-7.4 7.4-3.3.6.6-3.3z"/><path d="M9.2 4.1l2.7 2.7"/>',
@@ -61,6 +60,7 @@ ICONS = {
 }
 
 _loaded = False
+_goldy_mark = None
 
 
 def _ensure_loaded():
@@ -76,13 +76,35 @@ def _ensure_loaded():
             pass
 
 
+def _goldy_inner():
+    """The inner markup of the Goldy brand mark (a full multi-colour golden wave),
+    loaded once from goldy_mark.svg beside this file and stripped of its <svg>
+    wrapper so icon() can re-wrap it at the requested size."""
+    global _goldy_mark
+    if _goldy_mark is None:
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "goldy_mark.svg")
+        try:
+            m = re.search(r"<svg\b[^>]*>(.*)</svg>", open(p).read(), re.S)
+            _goldy_mark = m.group(1).strip() if m else ""
+        except OSError:
+            _goldy_mark = ""
+    return _goldy_mark
+
+
 def icon(name, cls=""):
     """Inline SVG for `name`, or empty string if unknown."""
     _ensure_loaded()
+    c = f"ic {cls}".strip()
+    # the brand mark is a full multi-colour SVG (its own fills), not a glyph
+    if name == "goldy":
+        inner = _goldy_inner()
+        if not inner:
+            return ""
+        return (f"<svg class='{c}' viewBox='0 0 64 64' fill='none' "
+                f"xmlns='http://www.w3.org/2000/svg' aria-hidden='true'>{inner}</svg>")
     inner = ICONS.get(name)
     if not inner:
         return ""
-    c = f"ic {cls}".strip()
     return (f"<svg class='{c}' viewBox='0 0 16 16' fill='none' "
             f"stroke='currentColor' stroke-width='1.5' stroke-linecap='round' "
             f"stroke-linejoin='round' aria-hidden='true'>{inner}</svg>")
