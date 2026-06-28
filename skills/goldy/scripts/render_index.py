@@ -70,8 +70,8 @@ CSS = """
 *{box-sizing:border-box}
 :root{
   --bg:#fbf9f3; --card:#fff; --ink:#2b2720; --muted:#6f685c; --line:#e7e1d6;
-  --gold:#caa24a; --gold-soft:#fbf3dd; --blue:#3a6ea5; --blue-soft:#e9f1fa;
-  --violet:#7c5cbf; --violet-soft:#efeafb; --teal:#2f8f83; --teal-soft:#e2f3f0;
+  --gold:#eaa81f; --gold-soft:#fdedc4; --blue:#2f7fe6; --blue-soft:#e0eeff;
+  --violet:#8b46ec; --violet-soft:#efe2ff; --teal:#08b6a4; --teal-soft:#ccf6ee;
   --shadow:0 1px 2px rgba(40,36,28,.05),0 8px 24px rgba(40,36,28,.05);
 }
 html{-webkit-text-size-adjust:100%}

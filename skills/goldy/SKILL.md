@@ -130,6 +130,14 @@ Only when the knowledge base is built do you proceed.
 
 Now edit `.goldy/nodes.json`, applying what you learned. Keep the `meta` block.
 
+**Tone: precise and professional.** Write every explanation (titles, transitions,
+rationale, summaries) as a senior engineer would in a design doc: concrete and
+specific, naming the actual file, command, type or trade-off involved. State things
+plainly and in the present or simple past. No vague filler ("we did some setup"),
+no hedging, no chatty asides or hype, no exclamation. Prefer the exact noun over a
+gesture at it ("indexed tool_result blocks by id for O(1) pairing", not "handled the
+results nicely").
+
 For each node add:
 
 - **`title`**: a short, summarized label (aim for under ~8 words), not a sentence
@@ -173,6 +181,14 @@ For each node add:
   `code_tips` covers tokens inside an embedded or written code panel, keyed by the
   bare name or the dotted path:
   `{"my_helper": {"tip": "...", "url": "..."}, "obj.method": {"tip": "..."}}`.
+
+  **Denote what a script does.** When a step runs a script, by an interpreter
+  (`python3 deploy.py`, `node seed.js`) or directly (`./run.sh`, `zsh build.zsh`),
+  the renderer already flags the script filename as a script. Add a `detail_tips`
+  override keyed by that filename (for example `"deploy.py"` or `"./run.sh"`) whose
+  `tip` states, in one or two precise sentences, what the script actually does
+  (its inputs, its effect), reading the file if it is in the repo. Do not leave a
+  run-script step explained only as a generic argument.
 
   **Fetch the docs for notable functions.** The renderer already explains common
   language keywords, builtins, modules and module members (for example

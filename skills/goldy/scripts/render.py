@@ -329,6 +329,31 @@ def tip_span(text, tip, url, cls):
             f"<span class='tip'>{body}{link}</span></span>")
 
 
+# A command that runs a script, by an interpreter (python3 deploy.py) or directly
+# (./run.sh), should call the script out as a script and say what it does. The
+# renderer flags it; enrichment supplies the "what it does" via a token override.
+SCRIPT_EXT = {".py": "Python", ".js": "JavaScript", ".mjs": "JavaScript",
+              ".ts": "TypeScript", ".sh": "shell", ".bash": "Bash", ".zsh": "Zsh",
+              ".rb": "Ruby", ".pl": "Perl", ".ps1": "PowerShell", ".rs": "Rust",
+              ".go": "Go", ".lua": "Lua", ".php": "PHP"}
+
+
+def script_lang_name(tok):
+    """The language label if `tok` names a script file (by extension), else None."""
+    m = re.search(r"(\.[A-Za-z0-9]+)$", tok or "")
+    return SCRIPT_EXT.get(m.group(1).lower()) if m else None
+
+
+def script_tip(tok, cur_cmd):
+    """Default tooltip for a script token: name it, say how it is run, and point at
+    the step's own description for what it does (enrichment can override this)."""
+    name = tok.split("/")[-1]
+    lang = script_lang_name(tok) or "executable"
+    how = "run directly" if (cur_cmd in (None, name)) else f"run by '{cur_cmd}'"
+    return (f"{name}\n{lang} script, {how}. This step is what the script does; "
+            "see the step's description for the specifics.")
+
+
 def annotate_bash(cmd, overrides=None):
     return "<div class='cmd'>" + annotate_bash_inner(cmd, overrides) + "</div>"
 
@@ -351,7 +376,8 @@ def annotate_bash_inner(cmd, overrides=None):
 
         ov = overrides.get(tok)
         if ov:
-            out.append(tip_span(tok, ov.get("tip", ""), ov.get("url"), "t-arg"))
+            ocls = "t-script" if script_lang_name(tok) else "t-arg"
+            out.append(tip_span(tok, ov.get("tip", ""), ov.get("url"), ocls))
             continue
 
         if kind == "str":
@@ -378,8 +404,11 @@ def annotate_bash_inner(cmd, overrides=None):
         else:  # word
             if at_cmd and not ASSIGN_RE.match(tok):
                 cur_cmd = tok.split("/")[-1]
-                tip = CMD.get(cur_cmd, "Program or builtin invoked as a command.")
-                out.append(tip_span(tok, tip, url_whole, "t-cmd"))
+                if script_lang_name(tok):       # the command itself is a script
+                    out.append(tip_span(tok, script_tip(tok, cur_cmd), None, "t-script"))
+                else:
+                    tip = CMD.get(cur_cmd, "Program or builtin invoked as a command.")
+                    out.append(tip_span(tok, tip, url_whole, "t-cmd"))
                 at_cmd = False
                 expect_sub = cur_cmd in SUBCMD_CMDS
             elif ASSIGN_RE.match(tok):
@@ -391,6 +420,8 @@ def annotate_bash_inner(cmd, overrides=None):
                                  "Hover read more for what it does.")
                 out.append(tip_span(tok, tip, url_whole, "t-sub"))
                 expect_sub = False
+            elif script_lang_name(tok):          # a script passed to an interpreter
+                out.append(tip_span(tok, script_tip(tok, cur_cmd), None, "t-script"))
             elif tok in DEV_FILES:
                 out.append(tip_span(tok, DEV_FILES[tok], DEV_NULL_URL, "t-dev"))
             elif PERM_RE.match(tok):
@@ -1173,9 +1204,9 @@ def render(data, detail=None, parent=None):
 CSS = r"""
 :root{
   --bg:#f7f6f3; --card:#ffffff; --ink:#2c2a26; --muted:#7a756c; --line:#e8e4dd;
-  --gold:#caa24a; --gold-soft:#fbf3dd; --blue:#3a6ea5; --blue-soft:#e9f1fa;
-  --violet:#7c5cbf; --violet-soft:#efeafb; --teal:#2f8f83; --teal-soft:#e2f3f0;
-  --red:#c0532f; --red-soft:#fbe9e2;
+  --gold:#eaa81f; --gold-soft:#fdedc4; --blue:#2f7fe6; --blue-soft:#e0eeff;
+  --violet:#8b46ec; --violet-soft:#efe2ff; --teal:#08b6a4; --teal-soft:#ccf6ee;
+  --red:#ef4b3c; --red-soft:#ffe2dc;
   --radius:14px; --shadow:0 1px 2px rgba(40,36,28,.06),0 8px 24px rgba(40,36,28,.05);
 }
 *{box-sizing:border-box}
@@ -1188,13 +1219,14 @@ header{margin-bottom:40px}
 .eyebrow .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);
   box-shadow:0 0 0 4px var(--gold-soft)}
 .eyebrow .goldy-mark{width:18px;height:18px}.eyebrow .goldy-mark .ic{width:18px;height:18px}
-/* up-arrow back to the master index (the parent doc), on per-conversation reports */
-.parent-link{display:inline-flex;align-items:center;justify-content:center;margin:0 0 20px;
-  width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--card);
+/* up-arrow back to the master index (the parent doc), inline with the eyebrow */
+.top-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.parent-link{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:var(--card);
   color:var(--gold);text-decoration:none;box-shadow:var(--shadow);
   transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .2s,border-color .2s}
 .parent-link:hover{transform:translateY(-2px);border-color:#e3d8bf;box-shadow:0 5px 14px rgba(40,36,28,.12)}
-.parent-link .ic{width:18px;height:18px}
+.parent-link .ic{width:16px;height:16px}
 h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spacing:-.02em;
   max-width:24ch}
 .intro{color:var(--muted);font-size:15.5px;max-width:62ch;line-height:1.55}
@@ -1307,9 +1339,9 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
   --indent:0px;--bead-y:35px;--gap:42px;--accent:var(--gold);background:transparent}
 /* each kind's accent colour, used by the spine, the bead and the hover flow */
 .k-action{--accent:var(--blue)} .k-prompt{--accent:var(--violet)}
-.k-principle{--accent:var(--teal)} .k-security{--accent:#c0392b}
-.k-optim{--accent:#d99412} .k-test{--accent:#2f9d63} .k-net{--accent:#1f87b0}
-.k-summary{--accent:#6b6052}
+.k-principle{--accent:var(--teal)} .k-security{--accent:#ec3a2c}
+.k-optim{--accent:#f7a008} .k-test{--accent:#12b866} .k-net{--accent:#119bd8}
+.k-summary{--accent:#6e6699}
 @keyframes rise{to{opacity:1;transform:none}}
 /* priority staircase: lower-priority nodes step further right off the spine, so
    the key steps sit closest to the line and minor ones cascade outward */
@@ -1364,16 +1396,16 @@ h1{font-size:30px;line-height:1.2;margin:14px 0 8px;font-weight:800;letter-spaci
 .k-prompt .card{border-left:3px solid var(--violet)}
 .k-principle .card{border-left:3px solid var(--teal);
   background:linear-gradient(180deg,#fbfffe,#fff)}
-.k-security .card{border-left:3px solid #c0392b;background:linear-gradient(180deg,#fffbfb,#fff)}
-.k-optim .card{border-left:3px solid #d99412;background:linear-gradient(180deg,#fffdf8,#fff)}
-.k-test .card{border-left:3px solid #2f9d63;background:linear-gradient(180deg,#fafffb,#fff)}
+.k-security .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#fffbfb,#fff)}
+.k-optim .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#fffdf8,#fff)}
+.k-test .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#fafffb,#fff)}
 .k-security .node-title{color:#a8362b} .k-optim .node-title{color:#8a6012}
 .k-test .node-title{color:#256b45}
 .k-test .rationale{background:linear-gradient(#f3fbf6,#e8f6ee);border-color:#cbe8d6}
 .k-test .rat-tag{color:#2f9d63}
-.k-net .card{border-left:3px solid #1f87b0;background:linear-gradient(180deg,#f8fdff,#fff)}
+.k-net .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#f8fdff,#fff)}
 .k-net .node-title{color:#1a647f}
-.k-summary .card{border-left:3px solid #6b6052;background:linear-gradient(180deg,#fcfaf6,#fff)}
+.k-summary .card{border-left:3px solid var(--accent);background:linear-gradient(180deg,#fcfaf6,#fff)}
 .k-summary .node-title{color:#5a5246}
 .k-net .rationale{background:linear-gradient(#f2fafd,#e6f3f9);border-color:#c4e3ef}
 .k-net .rat-tag{color:#1f87b0}
@@ -1492,6 +1524,8 @@ code{background:#f0ece3;border-radius:5px;padding:1px 5px;font:12.5px ui-monospa
 .t-var{color:#e8a76b} .t-op{color:#e98aa8;font-weight:600} .t-path{color:#cfc8bb}
 .t-arg{color:#d7d1c5} .t-sub{color:#7fd4b0;font-weight:600}
 .t-redir{color:#e0a85a;font-weight:600} .t-dev{color:#9ed0e8;font-style:italic}
+.t-script{color:#7fd4b0;font-weight:600;text-decoration:underline dotted rgba(255,255,255,.45);
+  text-underline-offset:3px}
 .cmd.out{background:#2a2824;color:#bdb6a6;line-height:1.65}
 .t-url{color:#7fb2e8;text-decoration:underline} .t-perm{color:#6fd0c4}
 .t-exit{color:#f0c969;font-weight:600} .t-err{color:#ef8a6a;font-weight:600}
@@ -1707,9 +1741,8 @@ TEMPLATE = """<!doctype html>
 <title>{title}</title>
 <style>{css}</style></head>
 <body><div class="wrap">
-{parent_link}
 <header>
-  <span class="eyebrow"><span class="goldy-mark">{goldy_mark}</span>Goldy walkthrough</span>
+  <div class="top-row">{parent_link}<span class="eyebrow"><span class="goldy-mark">{goldy_mark}</span>Goldy walkthrough</span></div>
   <h1>{headline}</h1>
   <p class="intro">{summary}</p>
   {byline}
