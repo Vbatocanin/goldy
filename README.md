@@ -219,12 +219,17 @@ Commands and code teach you directly:
 - hover any shell token (command, **subcommand**, flag, path, redirection like
   `2>`, device files like `/dev/null`, operators) for an explanation plus a
   *read more* link to **explainshell**,
+- a **script** a command runs (`python3 deploy.py`, `./run.sh`, `zsh build.zsh`)
+  is flagged as a script, with a tooltip describing what that script does,
 - hover meaningful output (paths, permissions, exit codes, errors),
 - embedded programs (`python3 -c ...`, heredocs) and written code files (`.py`,
   `.sh`, ...) get their own labeled, syntax-highlighted, hover-annotated panel.
 
-The whole thing is one self-contained HTML file with inline CSS and JS: no build
-step, no dependencies, no network needed to view. And no em dashes, ever.
+A report is one self-contained HTML file with inline CSS and JS: no build step, no
+dependencies, no network needed to view. And no em dashes, ever. By default a report
+omits Goldy's own report-generation steps (running the pipeline scripts, writing to
+`.goldy/`), so documenting a session does not document the act of documenting it;
+pass `--include-self` to `parse_transcript.py` to keep them.
 
 ---
 
