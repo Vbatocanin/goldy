@@ -685,6 +685,30 @@
           "note": "Background on bundling assets inline so a file stands alone."
         }
       ],
+      "transition": "Taken together, those choices add up to one closing picture."
+    },
+    {
+      "id": "sum1",
+      "kind": "summary",
+      "priority": "high",
+      "title": "In summary: the path from session to report",
+      "summary": "Goldy turns a raw Claude Code session into a portable, Notion-style walkthrough, and the build followed one consistent spine:\n\n- **Source of truth**: read the real session transcript instead of paraphrasing it.\n- **Three stages**: parse extracts the facts, enrich adds the reasoning and sources, render emits the page, talking only through nodes.json.\n- **Deterministic core**: the mechanical work is plain Python; the model is spent only on judgement.\n- **Safe by default**: captured output is capped and scanned so secrets never reach a shared report.\n- **One durable file**: the result is a single dependency-free HTML document you can email, commit or open offline.",
+      "rationale": "Read top to bottom, the steps above are that story in detail: learn before writing, separate the stages, keep the predictable parts predictable, and leave behind an artifact that outlives its toolchain.",
+      "materials": [
+        {
+          "title": "Extend Claude with Skills, Claude Code Docs",
+          "kind": "docs",
+          "url": "https://code.claude.com/docs/en/skills",
+          "note": "The SKILL.md frontmatter and progressive-disclosure model Goldy's skill is built on.",
+          "summary": "A skill is a folder containing a SKILL.md file whose YAML frontmatter (name and description) is preloaded into the system prompt so Claude knows when to use it. The fuller instructions, plus optional scripts, references and assets, load only when the skill is actually triggered. This progressive disclosure keeps base context small while still giving the agent deep, on-demand capability."
+        },
+        {
+          "title": "Notion-style document design",
+          "kind": "reference",
+          "url": "https://www.notion.com/help/writing-and-editing-basics",
+          "note": "The clean-card visual language the finished report borrows from."
+        }
+      ],
       "transition": ""
     }
   ]

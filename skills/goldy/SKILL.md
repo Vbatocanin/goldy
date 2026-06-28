@@ -200,6 +200,13 @@ never invented:
   web-API design and versioning, DNS, TLS/HTTPS, ports and protocols. Link MDN
   HTTP, the URL standard, and the relevant networking references.
 
+- **`summary`**: a single closing node, appended last, that recaps the whole
+  walkthrough. Pull the through-line of the session into a short lead plus a few
+  bulleted takeaways (the key decisions and principles, in the reader's words),
+  and a one-line `rationale`. It is `priority: high` so it always shows, and its
+  bubble carries a distinct neutral accent so the finale reads as a capstone, not
+  another step. Add exactly one.
+
 Each teaching node has the same shape as a decision (`title`, `summary`,
 `rationale`, `materials`, optional `alternatives`) with its own `kind`.
 
@@ -226,9 +233,13 @@ the card chrome (border, fill, padding, body) melted away. Clicking a bubble mor
 it into the full card: the icon face shrinks from a 58px bubble to a small header
 badge while the card grows around it and the body unfolds, all on one element so
 open and closed read as the same object resizing. Bubbles are keyboard-focusable,
-so Enter or Space toggles them too. Two fold controls, Expand all and Collapse all, drive the whole graph at
-once. The spine is drawn per node, so the connecting line begins at the first bead
-and ends at the last, with no stub past either end.
+so Enter or Space toggles them too. The icon face is the only marker (there is no
+separate spine bead), and it sits in front of the spine, so the lines tuck behind
+it. Two fold controls, Expand all and Collapse all, drive the whole graph at once.
+The spine is drawn per node, so the connecting line begins at the first face and
+ends at the last, with no stub past either end. Hovering a bubble lights its
+connector and spine segment in the bubble's own colour, with a brighter band
+flowing along them toward the next node, so the link reads as live current.
 
 **Priority staircase and story.** Bubbles step right by priority: high-priority
 nodes sit closest to the spine and lower-priority ones cascade outward, so the
