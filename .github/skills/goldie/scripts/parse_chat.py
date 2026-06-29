@@ -151,7 +151,13 @@ def is_goldie_meta(detail):
 
 def describe_tool(part):
     """Produce (title, detail, result) for an action node from a tool-invocation
-    response part. Best-effort across the toolId / toolSpecificData variants."""
+    response part. Best-effort across the toolId / toolSpecificData variants.
+
+    TODO(copilot): validate against a real VS Code Copilot chat session (run this
+    file with --list, then parse it) and extend the toolId / part-shape handling
+    here for any real tool calls this gets wrong. Tested so far only on a
+    synthetic session matching the reverse-engineered schema.
+    """
     tool = part.get("toolId") or part.get("toolName") or part.get("kind") or "tool"
     msg = md_text(part.get("invocationMessage") or part.get("pastTenseMessage"))
     spec = part.get("toolSpecificData") or {}

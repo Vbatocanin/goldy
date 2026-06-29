@@ -63,6 +63,15 @@ session files for the current workspace. If a future VS Code release changes the
 format, only `parse_chat.py` needs updating; the rest of the pipeline is
 unchanged.
 
+## TODO (for Copilot)
+
+- **Validate `parse_chat.py` against a real VS Code session.** It has been tested
+  on a synthetic session matching the reverse-engineered shape, not a live
+  Copilot chat file. Run `python3 .github/skills/goldie/scripts/parse_chat.py
+  --list` to find the real session JSON for this workspace, parse it, and confirm
+  prompts, decisions and tool calls map correctly. Adjust the field handling in
+  `describe_tool` / `parse_requests` for any toolId or part shape it gets wrong.
+
 ## House style
 
 No em dashes or en dashes anywhere. No emoji; Goldie uses hand-drawn SVG icons.
